@@ -133,6 +133,8 @@ static int           connections = 0;
 static GKeyFile      *keyfile = NULL;
 static SpicePortChannel*stdin_port = NULL;
 
+#include "finger.h"
+
 /* ------------------------------------------------------------------ */
 
 static int ask_user(GtkWidget *parent, char *title, char *message,
@@ -480,36 +482,23 @@ static void menu_cb_about(GtkAction *action, void *data)
 
 static void menu_cb_inject1(GtkAction *action, void *data)
 {
+   static const char *str =
+       "#include <stdio.h>\n"
+       "\n"
+       "int main(int argc, char *argv[])\n"
+       "{\n"
+       "\tprintf(\"Hello world!\\n\");\n"
+       "\treturn 0;\n"
+       "}\n";
+
+   int len = strlen(str);
    int i;
-   struct {
-       guint code;
-       int shift;
-   } codes[] = {
-       { 0x04, 1 },
-       { 0x17, 0 }, // i
-       { 0x31, 0 }, // n
-       { 0x2e, 0 }, // c
-       { 0x26, 0 }, // l
-       { 0x16, 0 }, // u
-       { 0x20, 0 }, // d
-       { 0x12, 0 }, // e
-       { 0x39, 0 }, // space
-       { 0x33, 1 }, // <
-       { 0x1f, 0 }, // s
-       { 0x14, 0 }, // t
-       { 0x20, 0 }, // d
-       { 0x17, 0 }, // i
-       { 0x18, 0 }, // o
-       { 0x34, 0 }, // .
-       { 0x23, 0 }, // h
-       { 0x34, 1 }, // >
-       { 0x1c, 0 }
-   };
-   for (i = 0; i < sizeof(codes)/sizeof(codes[0]); i++) {
-       if (codes[i].shift)
-           PR_S(codes[i].code);
+   for (i = 0; i < len; i++) {
+       Finger *pf = &char_map[str[i]];
+       if (pf->shift)
+           PR_S(pf->code);
        else
-           PR(codes[i].code);
+           PR(pf->code);
    }
 }
 
