@@ -502,6 +502,65 @@ static void menu_cb_inject1(GtkAction *action, void *data)
    }
 }
 
+static GtkWidget *create_input_window()
+{
+    GtkWidget *window;
+    GtkWidget *vbox;
+    GtkWidget *hbox1, *hbox2;
+    GtkWidget *label;
+    GtkWidget *scrollwin;
+    GtkWidget *text_view;
+    GtkWidget *button;
+
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+    gtk_container_border_width(GTK_CONTAINER(window), 10);
+
+    vbox = gtk_vbox_new(FALSE, 10);
+
+    hbox1 = gtk_hbox_new(FALSE, 10);
+    label = gtk_label_new("Text:");
+    gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox1,
+                       FALSE, FALSE, 0);
+
+    text_view = gtk_text_view_new();
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_CHAR);
+    scrollwin = gtk_scrolled_window_new(
+      NULL,
+      gtk_text_view_get_vadjustment(GTK_TEXT_VIEW(text_view)));
+    gtk_scrolled_window_set_policy(
+        GTK_SCROLLED_WINDOW(scrollwin),
+        GTK_POLICY_NEVER,
+        GTK_POLICY_ALWAYS);
+    gtk_scrolled_window_set_shadow_type(
+        GTK_SCROLLED_WINDOW(scrollwin),
+        GTK_SHADOW_IN);
+    gtk_container_add(GTK_CONTAINER(scrollwin), text_view);
+    gtk_box_pack_start(GTK_BOX(vbox), scrollwin,
+                       TRUE, TRUE, 0);
+
+    hbox2 = gtk_hbox_new(FALSE, 10);
+    button = gtk_button_new_with_label("Send");
+    gtk_widget_set_size_request(button, 100, 40);
+    gtk_box_pack_end(GTK_BOX(hbox2), button, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
+
+    gtk_container_add(GTK_CONTAINER(window), vbox);
+
+    gtk_widget_show_all(window);
+
+    return window;
+}
+
+GtkWidget *type_window;
+
+static void menu_cb_type(GtkAction *action, void *data)
+{
+    type_window = create_input_window();
+
+}
+
 static gboolean delete_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     SpiceWindow *win = data;
@@ -739,7 +798,11 @@ static const GtkActionEntry entries[] = {
         .name        = "First",
         .label       = "_First",
         .callback    = G_CALLBACK(menu_cb_inject1)
-    } 
+    },{
+        .name        = "Type",
+	.label       = "_Type",
+	.callback    = G_CALLBACK(menu_cb_type)
+    }
 };
 
 static const char *spice_display_properties[] = {
@@ -881,6 +944,7 @@ static char ui_xml[] =
 "    </menu>\n"
 "    <menu action='InjectMenu'>\n"
 "      <menuitem action='First'/>\n"
+"      <menuitem action='Type'/>\n"
 "    </menu>\n"
 "  </menubar>\n"
 "  <toolbar action='ToolBar'>\n"
@@ -947,57 +1011,6 @@ static void compression_cb(GtkRadioAction *action G_GNUC_UNUSED,
     spice_display_change_preferred_compression(SPICE_CHANNEL(user_data),
                                                gtk_radio_action_get_current_value(current));
 #endif
-}
-
-static GtkWidget *create_input_window()
-{
-    GtkWidget *window;
-    GtkWidget *vbox;
-    GtkWidget *hbox1, *hbox2;
-    GtkWidget *label;
-    GtkWidget *scrollwin;
-    GtkWidget *text_view;
-    GtkWidget *button;
-
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
-    gtk_container_border_width(GTK_CONTAINER(window), 10);
-
-    vbox = gtk_vbox_new(FALSE, 10);
-
-    hbox1 = gtk_hbox_new(FALSE, 10);
-    label = gtk_label_new("Text:");
-    gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox1,
-                       FALSE, FALSE, 0);
-
-    text_view = gtk_text_view_new();
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_CHAR);
-    scrollwin = gtk_scrolled_window_new(
-      NULL,
-      gtk_text_view_get_vadjustment(GTK_TEXT_VIEW(text_view)));
-    gtk_scrolled_window_set_policy(
-        GTK_SCROLLED_WINDOW(scrollwin),
-        GTK_POLICY_NEVER,
-        GTK_POLICY_ALWAYS);
-    gtk_scrolled_window_set_shadow_type(
-        GTK_SCROLLED_WINDOW(scrollwin),
-        GTK_SHADOW_IN);
-    gtk_container_add(GTK_CONTAINER(scrollwin), text_view);
-    gtk_box_pack_start(GTK_BOX(vbox), scrollwin,
-                       TRUE, TRUE, 0);
-
-    hbox2 = gtk_hbox_new(FALSE, 10);
-    button = gtk_button_new_with_label("Send");
-    gtk_widget_set_size_request(button, 100, 40);
-    gtk_box_pack_end(GTK_BOX(hbox2), button, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
-
-    gtk_container_add(GTK_CONTAINER(window), vbox);
-
-    gtk_widget_show_all(window);
-
-    return window;
 }
 
 static void
