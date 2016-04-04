@@ -502,6 +502,60 @@ static void menu_cb_inject1(GtkAction *action, void *data)
    }
 }
 
+GtkWidget *input_text_view;
+
+static gchar *get_input_text()
+{
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(
+        GTK_TEXT_VIEW(input_text_view));
+    GtkTextIter begin, end;
+
+    gtk_text_buffer_get_start_iter(buffer, &begin);
+    gtk_text_buffer_get_end_iter(buffer, &end);
+
+    return gtk_text_buffer_get_text(buffer, &begin, &end, FALSE);
+}
+
+typedef struct _SendingProcess
+{
+    gchar *text;
+    int len;
+    int i;
+} SendingProcess;
+
+SendingProcess tsp; // the sending process
+
+static void send_one_char(gchar c)
+{
+    Finger *pf = &char_map[c];
+    if (pf->shift)
+        PR_S(pf->code);
+    else
+        PR(pf->code);
+}
+
+static gint do_sending(gpointer data)
+{
+    tsp.i++;
+    if(tsp.i == tsp.len) {
+        g_free(tsp.text);
+        return FALSE;
+    }
+    send_one_char(tsp.text[tsp.i]);
+    return TRUE;
+}
+
+static void send_button_clicked(GtkWidget *button, gpointer data)
+{
+    tsp.text = get_input_text();
+    tsp.len = strlen(tsp.text);
+    tsp.i = -1;
+
+    g_timeout_add(1, do_sending, NULL);
+
+    puts("Start sending...");
+}
+
 static GtkWidget *create_input_window()
 {
     GtkWidget *window;
@@ -543,12 +597,17 @@ static GtkWidget *create_input_window()
     hbox2 = gtk_hbox_new(FALSE, 10);
     button = gtk_button_new_with_label("Send");
     gtk_widget_set_size_request(button, 100, 40);
+    g_signal_connect(
+        GTK_OBJECT(button), "clicked",
+    GTK_SIGNAL_FUNC(send_button_clicked), NULL);
     gtk_box_pack_end(GTK_BOX(hbox2), button, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
 
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
     gtk_widget_show_all(window);
+
+    input_text_view = text_view;
 
     return window;
 }
@@ -768,14 +827,14 @@ static const GtkActionEntry entries[] = {
         .accelerator = "<shift>F11",
     },{
 #ifdef USE_SMARTCARD
-	.name        = "InsertSmartcard",
-	.label       = "_Insert Smartcard",
-	.callback    = G_CALLBACK(menu_cb_insert_smartcard),
+    .name        = "InsertSmartcard",
+    .label       = "_Insert Smartcard",
+    .callback    = G_CALLBACK(menu_cb_insert_smartcard),
         .accelerator = "<shift>F8",
     },{
-	.name        = "RemoveSmartcard",
-	.label       = "_Remove Smartcard",
-	.callback    = G_CALLBACK(menu_cb_remove_smartcard),
+    .name        = "RemoveSmartcard",
+    .label       = "_Remove Smartcard",
+    .callback    = G_CALLBACK(menu_cb_remove_smartcard),
         .accelerator = "<shift>F9",
     },{
 #endif
@@ -800,8 +859,8 @@ static const GtkActionEntry entries[] = {
         .callback    = G_CALLBACK(menu_cb_inject1)
     },{
         .name        = "Type",
-	.label       = "_Type",
-	.callback    = G_CALLBACK(menu_cb_type)
+        .label       = "_Type",
+        .callback    = G_CALLBACK(menu_cb_type)
     }
 };
 
