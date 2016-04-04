@@ -503,6 +503,7 @@ static void menu_cb_inject1(GtkAction *action, void *data)
 }
 
 GtkWidget *input_text_view;
+GtkWidget *input_progress_bar;
 
 static gchar *get_input_text()
 {
@@ -537,12 +538,25 @@ static void send_one_char(gchar c)
 static gint do_sending(gpointer data)
 {
     tsp.i++;
+    gtk_progress_bar_set_fraction(
+        GTK_PROGRESS_BAR(input_progress_bar),
+	tsp.i * 1.0 / tsp.len
+    );
+    {
+        char buf[16];
+	sprintf(buf, "%.1f%%", tsp.i * 1.0f / tsp.len * 100);
+	gtk_progress_bar_set_text(
+	    GTK_PROGRESS_BAR(input_progress_bar),
+	    buf);
+    }
+
     if(tsp.i == tsp.len) {
         g_free(tsp.text);
         return FALSE;
     }
     send_one_char(tsp.text[tsp.i]);
-    return TRUE;
+
+   return TRUE;
 }
 
 static void send_button_clicked(GtkWidget *button, gpointer data)
@@ -560,11 +574,12 @@ static GtkWidget *create_input_window()
 {
     GtkWidget *window;
     GtkWidget *vbox;
-    GtkWidget *hbox1, *hbox2;
-    GtkWidget *label;
+    GtkWidget *hbox1, *hbox2, *hbox3;
+    GtkWidget *label, *label2;
     GtkWidget *scrollwin;
     GtkWidget *text_view;
     GtkWidget *button;
+    GtkWidget *progress_bar;
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
@@ -594,6 +609,15 @@ static GtkWidget *create_input_window()
     gtk_box_pack_start(GTK_BOX(vbox), scrollwin,
                        TRUE, TRUE, 0);
 
+    label2 = gtk_label_new("Progress: ");
+    progress_bar = gtk_progress_bar_new();
+    hbox3 = gtk_hbox_new(FALSE, 10);
+    gtk_box_pack_start(GTK_BOX(hbox3), label2, FALSE, FALSE, 0);
+    gtk_box_pack_start(
+        GTK_BOX(hbox3), progress_bar,
+        FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, FALSE, 0);
+
     hbox2 = gtk_hbox_new(FALSE, 10);
     button = gtk_button_new_with_label("Send");
     gtk_widget_set_size_request(button, 100, 40);
@@ -608,6 +632,7 @@ static GtkWidget *create_input_window()
     gtk_widget_show_all(window);
 
     input_text_view = text_view;
+    input_progress_bar = progress_bar;
 
     return window;
 }
