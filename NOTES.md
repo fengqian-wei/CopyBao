@@ -5,6 +5,9 @@
 - [ ] 开发接收端base64解码的功能
 
 ## 参考
+
+### GTK
+
 - [GTK+ 2.0 Tutorial](https://developer.gnome.org/gtk-tutorial/stable/)
   - [Timeouts](https://developer.gnome.org/gtk-tutorial/stable/c1759.html)
   - [Progress Bars](https://developer.gnome.org/gtk-tutorial/stable/x829.html)
@@ -23,6 +26,12 @@
   - [gtk_scrolled_window_set_policy ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-policy)
   - [gtk_scrolled_window_set_shadow_type ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-shadow-type)
 - [How to set a fixed windows size for a GTK+ app in C?](http://stackoverflow.com/questions/4772804/how-to-set-a-fixed-windows-size-for-a-gtk-app-in-c)
+
+### Win32 API
+
+- [How can we check if a file Exists or not using Win32 program?](http://stackoverflow.com/questions/3828835/how-can-we-check-if-a-file-exists-or-not-using-win32-program)
+- [Win32 - Select Directory Dialog from C/C++](http://stackoverflow.com/questions/12034943/win32-select-directory-dialog-from-c-c)
+- [CoTaskMemFree Function]() - 使用这个而非IMalloc->Free()释放pidl
 
 ## 2016.3.30
 - 学宝虚拟机每次重新启动（cold & hot），都会使用新的端口号和密码。
