@@ -4,11 +4,19 @@
 
 ## 参考
 - [GTK+ 2.0 Tutorial](https://developer.gnome.org/gtk-tutorial/stable/)
+  - [Timeouts](https://developer.gnome.org/gtk-tutorial/stable/c1759.html)
+  - [Progress Bars](https://developer.gnome.org/gtk-tutorial/stable/x829.html)
 - [GTK+ 2 Reference Manual](https://developer.gnome.org/gtk2/2.24/)
   - [gtk_window_set_modal ()](https://developer.gnome.org/gtk2/2.24/GtkWindow.html#gtk-window-set-modal)
 - [Text Widget Overview](https://developer.gnome.org/gtk2/2.24/TextWidget.html)
 - [GtkTextView](https://developer.gnome.org/gtk2/2.24/GtkTextView.html)
   - [gtk_text_view_set_wrap_mode ()](https://developer.gnome.org/gtk2/2.24/GtkTextView.html#gtk-text-view-set-wrap-mode)
+  - gtk_widget_set_sensitive () for _enable/disable_
+  - [gtk_text_view_get_buffer ()](https://developer.gnome.org/gtk2/2.24/GtkTextView.html#gtk-text-view-get-buffer)
+  - GtkTextBuffer
+    - [gtk_text_buffer_get_text ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-text)
+    - [gtk_text_buffer_get_start_iter ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-start-iter)
+      - __Hints:__ g_free()
 - [GtkScrolledWindow](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html)
   - [gtk_scrolled_window_set_policy ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-policy)
   - [gtk_scrolled_window_set_shadow_type ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-shadow-type)
