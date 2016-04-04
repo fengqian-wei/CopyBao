@@ -503,6 +503,7 @@ static void menu_cb_inject1(GtkAction *action, void *data)
 }
 
 GtkWidget *input_text_view;
+GtkWidget *input_send_button;
 GtkWidget *input_progress_bar;
 
 static gchar *get_input_text()
@@ -552,6 +553,8 @@ static gint do_sending(gpointer data)
 
     if(tsp.i == tsp.len) {
         g_free(tsp.text);
+        gtk_widget_set_sensitive(input_send_button, TRUE);
+	gtk_widget_set_sensitive(input_text_view, TRUE);
         return FALSE;
     }
     send_one_char(tsp.text[tsp.i]);
@@ -561,6 +564,9 @@ static gint do_sending(gpointer data)
 
 static void send_button_clicked(GtkWidget *button, gpointer data)
 {
+    gtk_widget_set_sensitive(input_send_button, FALSE);
+    gtk_widget_set_sensitive(input_text_view, FALSE);
+
     tsp.text = get_input_text();
     tsp.len = strlen(tsp.text);
     tsp.i = -1;
@@ -631,6 +637,7 @@ static GtkWidget *create_input_window()
 
     gtk_widget_show_all(window);
 
+    input_send_button = button;
     input_text_view = text_view;
     input_progress_bar = progress_bar;
 
