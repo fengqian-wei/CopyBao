@@ -33,6 +33,10 @@
 - [Win32 - Select Directory Dialog from C/C++](http://stackoverflow.com/questions/12034943/win32-select-directory-dialog-from-c-c)
 - [CoTaskMemFree Function]() - 使用这个而非IMalloc->Free()释放pidl
 
+### base64
+- [coreutils/base64.c](http://git.savannah.gnu.org/cgit/coreutils.git/tree/src/base64.c)
+- [gnulib/base64.c](http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob;f=lib/base64.c;h=1a8bfce7a534f83f19a093432bafe883f16de9b1;hb=HEAD)
+
 ## 2016.3.30
 - 学宝虚拟机每次重新启动（cold & hot），都会使用新的端口号和密码。
 - 能否通过给virt-viewer编写扩展来解决问题？
