@@ -571,7 +571,7 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
     tsp.len = strlen(tsp.text);
     tsp.i = -1;
 
-    g_timeout_add(1, do_sending, NULL);
+    g_timeout_add(4, do_sending, NULL);
 
     puts("Start sending...");
 }
