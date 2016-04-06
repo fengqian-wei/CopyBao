@@ -28,6 +28,10 @@
 #include <vreader.h>
 #endif
 
+/* for read_file() */
+#include <sys/stat.h>
+#include <sys/fcntl.h>
+
 #include "glib-compat.h"
 #include "spice-widget.h"
 #include "spice-gtk-session.h"
@@ -474,6 +478,93 @@ static void menu_cb_about(GtkAction *action, void *data)
                           NULL);
 }
 
+/* !my critical seciton! */
+
+typedef struct _PeriodList
+{
+    gint *periods;
+    gsize num;
+} PeriodList;
+
+typedef struct _Recv
+{
+    char *file;
+    int period_index;
+} Recv;
+
+gint default_periods[] = { 1, 2, 5, 10, 20, 50, 100, 200, 500 };
+
+PeriodList default_period_list =
+{
+    default_periods,
+    sizeof(default_periods) / sizeof(gint)
+};
+
+PeriodList user_period_list;
+
+Recv default_recv =
+{
+    NULL,
+    0
+};
+
+Recv user_recv;
+
+typedef struct _Config
+{
+    PeriodList *period_list;
+    Recv *recv;
+} Config;
+
+Config the_config = { &default_period_list, &default_recv };
+
+static void load_config()
+{
+    GKeyFile *config = g_key_file_new();
+
+    if (g_key_file_load_from_file (
+        config, "config.txt", G_KEY_FILE_NONE, NULL) == FALSE)
+    {
+       /* TODO: pop up a warning message box here */
+    }
+    else {
+	user_period_list.periods = g_key_file_get_integer_list (
+            config, "main", "periods", &user_period_list.num, NULL);
+	if (user_period_list.periods && user_period_list.num > 0)
+            the_config.period_list = &user_period_list;
+
+        user_recv.file = g_key_file_get_string (
+	    config, "recv", "file", NULL);
+	if (user_recv.file) {
+            gint recv_period = g_key_file_get_integer (
+	        config, "recv", "period", NULL);
+	    int i;
+
+            user_recv.period_index = -1;
+            for (i = 0; i < the_config.period_list->num; i++) {
+                if (the_config.period_list->periods[i] == recv_period) {
+		    user_recv.period_index = i;
+		    break;
+		}
+	    }
+
+            the_config.recv = &user_recv;
+	}
+    }
+
+    g_key_file_free(config);
+}
+
+static void unload_config()
+{
+    if (the_config.period_list == &user_period_list) {
+        g_free (user_period_list.periods);
+    }
+    if (the_config.recv == &user_recv) {
+        g_free (user_recv.file);
+    }
+}
+
 #define P(c)  spice_inputs_key_press(inputs_channel, c)
 #define R(c)  spice_inputs_key_release(inputs_channel, c)
 #define PR(c) spice_inputs_key_press_and_release(inputs_channel, c)
@@ -576,6 +667,55 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
     puts("Start sending...");
 }
 
+GtkWidget *btn_load_recv;
+
+int read_file(const char *path, char **mem_ptr, int *len_ptr)
+{
+    int fd = open(path, O_RDONLY | O_BINARY);
+    if (fd == -1) {
+        return 0;
+    }
+
+    struct stat st;
+    if (fstat(fd, &st) == -1) {
+        return 0;
+    }
+
+    int len = st.st_size;
+    char *mem = (char *) g_malloc(len);
+    read(fd, mem, len);
+
+    close(fd);
+
+    *mem_ptr = mem;
+    *len_ptr = len;
+
+    return 1;
+}
+
+static GtkTextBuffer *text_buffer_from_file(const char *path)
+{
+    char *mem;
+    int len;
+    if (!read_file(path, &mem, &len))
+        return NULL;
+
+    GtkTextBuffer *text_buffer = gtk_text_buffer_new(NULL);
+    /* FIXME: mem can be non-UTF8, which is not allowed here */
+    gtk_text_buffer_set_text(text_buffer, mem, len);
+
+    g_free(mem);
+
+    return text_buffer;
+}
+
+static void load_recv(GtkWidget *button, gpointer data)
+{
+    GtkTextBuffer *b = text_buffer_from_file(the_config.recv->file);
+
+    gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), b);
+}
+
 static GtkWidget *create_input_window()
 {
     GtkWidget *window;
@@ -592,6 +732,18 @@ static GtkWidget *create_input_window()
     gtk_container_border_width(GTK_CONTAINER(window), 10);
 
     vbox = gtk_vbox_new(FALSE, 10);
+
+    GtkWidget *hbox4 = gtk_hbox_new(FALSE, 10);
+    btn_load_recv = gtk_button_new_with_label("Load Recv");
+    if (!the_config.recv->file)
+        gtk_widget_set_sensitive(btn_load_recv, false);
+
+    g_signal_connect (
+        GTK_OBJECT(btn_load_recv), "clicked",
+        GTK_SIGNAL_FUNC(load_recv), NULL);
+    gtk_box_pack_end (GTK_BOX(hbox4), btn_load_recv, FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(vbox), hbox4, FALSE, FALSE, 0);
 
     hbox1 = gtk_hbox_new(FALSE, 10);
     label = gtk_label_new("Text:");
@@ -2063,6 +2215,8 @@ int main(int argc, char *argv[])
 #endif
     keyfile = g_key_file_new();
 
+    load_config();
+
     int mode = S_IRWXU;
     conf_file = g_build_filename(g_get_user_config_dir(), "spicy", NULL);
     if (g_mkdir_with_parents(conf_file, mode) == -1)
@@ -2142,6 +2296,8 @@ int main(int argc, char *argv[])
     g_key_file_free(keyfile);
 
     g_free(spicy_title);
+
+    unload_config();
 
     setup_terminal(true);
     return 0;
