@@ -1,8 +1,14 @@
-﻿## TODO
+## TODO
+
+### ver 1.0
 - [x] 开发一个分派程序，可供用户选择是进入默认虚拟机还是修改版虚拟机
 - [x] 开发一个对话框，可供用户输入要粘贴进虚拟机的内容
 - [ ] 开发读入文件&转换为base64编码的功能
+- [ ] 开发发送端调速功能
 - [x] 开发接收端base64解码的功能
+- [ ] 清理spicy的界面
+
+### ver 2.0
 
 ## 参考
 
@@ -37,6 +43,8 @@
 - [How can we check if a file Exists or not using Win32 program?](http://stackoverflow.com/questions/3828835/how-can-we-check-if-a-file-exists-or-not-using-win32-program)
 - [Win32 - Select Directory Dialog from C/C++](http://stackoverflow.com/questions/12034943/win32-select-directory-dialog-from-c-c)
 - [CoTaskMemFree Function]() - 使用这个而非IMalloc->Free()释放pidl
+- [DialogBoxIndirectParam](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645461(v=vs.85).aspx) - 从二进制对话框“模板”创建对话框
+- [DialogProc callback function](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645469(v=vs.85).aspx)
 
 ### Win32 Resource File
 - [How can I read a compiled resource (.res) file in C#?](http://stackoverflow.com/questions/7982181/how-can-i-read-a-compiled-resource-res-file-in-c)
@@ -44,6 +52,9 @@
 ### base64
 - [coreutils/base64.c](http://git.savannah.gnu.org/cgit/coreutils.git/tree/src/base64.c)
 - [gnulib/base64.c](http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob;f=lib/base64.c;h=1a8bfce7a534f83f19a093432bafe883f16de9b1;hb=HEAD)
+
+### misc
+- [fstat](http://linux.die.net/man/2/fstat) - 获得文件长度
 
 ## 2016.3.30
 - 学宝虚拟机每次重新启动（cold & hot），都会使用新的端口号和密码。
