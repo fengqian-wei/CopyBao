@@ -658,6 +658,32 @@ static void send_one_char(gchar c)
         PR(pf->code);
 }
 
+static GtkWidget *btn_load_recv;
+static GtkWidget *btn_encode_file;
+static GtkWidget *btn_cancel_encode;
+static GtkWidget *lbl_period;
+static GtkWidget *btn_prev_period;
+static GtkWidget *btn_next_period;
+
+static int encode_state = 0;
+
+static void send_enable_buttons(gboolean end)
+{
+    gtk_widget_set_sensitive(btn_encode_file, end);
+    gtk_widget_set_sensitive(btn_cancel_encode, end);
+    gtk_widget_set_sensitive(btn_load_recv, end);
+    gtk_widget_set_sensitive(btn_prev_period, end);
+    gtk_widget_set_sensitive(btn_next_period, end);
+
+    if (end == TRUE) {
+        if(encode_state == 0) {
+            gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
+        } else if (encode_state == 1) {
+            gtk_widget_set_sensitive(btn_encode_file, FALSE);
+        }
+    }
+}
+
 static gint do_sending(gpointer data)
 {
     tsp.i++;
@@ -677,6 +703,8 @@ static gint do_sending(gpointer data)
         g_free(tsp.text);
         gtk_widget_set_sensitive(input_send_button, TRUE);
 	gtk_widget_set_sensitive(input_text_view, TRUE);
+
+        send_enable_buttons(TRUE);
         return FALSE;
     }
     send_one_char(tsp.text[tsp.i]);
@@ -691,6 +719,8 @@ static int current_period()
 
 static void send_button_clicked(GtkWidget *button, gpointer data)
 {
+    send_enable_buttons(FALSE);
+
     gtk_widget_set_sensitive(input_send_button, FALSE);
     gtk_widget_set_sensitive(input_text_view, FALSE);
 
@@ -702,8 +732,6 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
 
     puts("Start sending...");
 }
-
-GtkWidget *btn_load_recv;
 
 long get_file_size(FILE *fp)
 {
@@ -746,12 +774,6 @@ static GtkTextBuffer *text_buffer_from_file(FILE *fp)
 
 static GtkTextBuffer *input_text_buffer_origin;
 static GtkTextBuffer *input_text_buffer_encoded_file = NULL;
-
-static GtkWidget *btn_encode_file;
-static GtkWidget *btn_cancel_encode;
-static GtkWidget *lbl_period;
-static GtkWidget *btn_prev_period;
-static GtkWidget *btn_next_period;
 
 static char *choose_file()
 {
@@ -802,6 +824,7 @@ static void encode_file(GtkWidget *button, gpointer data)
     gtk_widget_set_sensitive(btn_encode_file, FALSE);
     gtk_widget_set_sensitive(btn_cancel_encode, TRUE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), FALSE);
+    encode_state = 1;
 }
 
 static void cancel_encode(GtkWidget *button, gpointer data)
@@ -814,6 +837,7 @@ static void cancel_encode(GtkWidget *button, gpointer data)
     gtk_widget_set_sensitive(btn_encode_file, TRUE);
     gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), TRUE);
+    encode_state = 0;
 }
 
 static void load_recv(GtkWidget *button, gpointer data)
