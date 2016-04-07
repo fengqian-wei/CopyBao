@@ -480,6 +480,19 @@ static void menu_cb_about(GtkAction *action, void *data)
 
 /* !my critical seciton! */
 
+GtkWidget *type_window;
+
+void msgbox(char *m)
+{
+    GtkWidget *dialog = gtk_message_dialog_new(
+        GTK_WINDOW(type_window), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO,
+	GTK_BUTTONS_OK, m);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
+
+#include "base64.h"
+
 typedef struct _PeriodList
 {
     gint *periods;
@@ -669,52 +682,112 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
 
 GtkWidget *btn_load_recv;
 
-int read_file(const char *path, char **mem_ptr, int *len_ptr)
+long get_file_size(FILE *fp)
 {
-    int fd = open(path, O_RDONLY | O_BINARY);
-    if (fd == -1) {
-        return 0;
-    }
-
+    int fd = fileno(fp);
     struct stat st;
-    if (fstat(fd, &st) == -1) {
-        return 0;
-    }
+    fstat(fd, &st);
+    return st.st_size;
+}
 
-    int len = st.st_size;
+void read_file(FILE *fp, char **mem_ptr, int *len_ptr)
+{
+    int len = get_file_size(fp);
     char *mem = (char *) g_malloc(len);
-    read(fd, mem, len);
-
-    close(fd);
+    fread(mem, 1, len, fp);
 
     *mem_ptr = mem;
     *len_ptr = len;
-
-    return 1;
 }
 
-static GtkTextBuffer *text_buffer_from_file(const char *path)
+static GtkTextBuffer *text_buffer_from_file(FILE *fp)
 {
     char *mem;
     int len;
-    if (!read_file(path, &mem, &len))
-        return NULL;
+    read_file(fp, &mem, &len);
 
     GtkTextBuffer *text_buffer = gtk_text_buffer_new(NULL);
     /* FIXME: mem can be non-UTF8, which is not allowed here */
     gtk_text_buffer_set_text(text_buffer, mem, len);
+
+    char *z = (char *) g_malloc(len+1);
+    memcpy(z, mem, len);
+    z[len] = '\0';
+    msgbox(z);
+    g_free(z);
 
     g_free(mem);
 
     return text_buffer;
 }
 
+static GtkTextBuffer *input_text_buffer_encoded_file;
+
+static void encode_file(GtkWidget *button, gpointer data)
+{
+    FILE *in = fopen("a.txt", "rb");
+    FILE *out = tmpfile();
+
+    int insize = get_file_size(in);
+    char buf[256];
+    sprintf(buf, "%06x\n", insize);
+    fputs(buf, out);
+
+    do_base64_encode(in, out, 80);
+    fclose(in);
+
+    rewind(out);
+    GtkTextBuffer *text_buffer = text_buffer_from_file(out);
+    fclose(out);
+
+    input_text_buffer_encoded_file = text_buffer;
+    gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), text_buffer);
+}
+
 static void load_recv(GtkWidget *button, gpointer data)
 {
-    GtkTextBuffer *b = text_buffer_from_file(the_config.recv->file);
+    GtkTextBuffer *b;
+
+    msgbox("here");
+
+    FILE *fp = fopen(the_config.recv->file, "rb");
+    b = text_buffer_from_file(fp);
+    fclose(fp);
 
     gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), b);
 }
+
+static GtkWidget *btn_encode_file;
+static GtkWidget *lbl_period;
+static GtkWidget *btn_prev_period;
+static GtkWidget *btn_next_period;
+static int current_period_index = 0;
+
+static void load_current_period()
+{
+    char buf[100];
+    sprintf(
+        buf, "%d ms",
+        the_config.period_list->periods[current_period_index]);
+    gtk_label_set_text(GTK_LABEL(lbl_period), buf);
+}
+
+static void prev_period(GtkWidget *button, gpointer data)
+{
+    if (current_period_index > 0) {
+        current_period_index--;
+	load_current_period();
+    }
+}
+
+static void next_period(GtkWidget *button, gpointer data)
+{
+    if (current_period_index < the_config.period_list->num - 1) {
+        current_period_index++;
+	load_current_period();
+    }
+}
+
 
 static GtkWidget *create_input_window()
 {
@@ -737,11 +810,15 @@ static GtkWidget *create_input_window()
     btn_load_recv = gtk_button_new_with_label("Load Recv");
     if (!the_config.recv->file)
         gtk_widget_set_sensitive(btn_load_recv, false);
-
     g_signal_connect (
         GTK_OBJECT(btn_load_recv), "clicked",
         GTK_SIGNAL_FUNC(load_recv), NULL);
     gtk_box_pack_end (GTK_BOX(hbox4), btn_load_recv, FALSE, FALSE, 0);
+    btn_encode_file = gtk_button_new_with_label("Encode File");
+    g_signal_connect (
+        GTK_OBJECT(btn_encode_file), "clicked",
+        GTK_SIGNAL_FUNC(encode_file), NULL);
+    gtk_box_pack_start (GTK_BOX(hbox4), btn_encode_file, FALSE, FALSE, 0);
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox4, FALSE, FALSE, 0);
 
@@ -776,12 +853,30 @@ static GtkWidget *create_input_window()
         FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, FALSE, 0);
 
+    GtkWidget *hbox5 = gtk_hbox_new(FALSE, 10);
+    gtk_box_pack_start(
+        GTK_BOX(hbox5), gtk_label_new("Period: "),
+	FALSE, FALSE, 0);
+    btn_prev_period = gtk_button_new_with_label("<<");
+    g_signal_connect(
+        GTK_OBJECT(btn_prev_period), "clicked",
+	GTK_SIGNAL_FUNC(prev_period), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox5), btn_prev_period, FALSE, FALSE, 0);
+    lbl_period = gtk_label_new("0 ms");
+    gtk_box_pack_start(GTK_BOX(hbox5), lbl_period, FALSE, FALSE, 0);
+    btn_next_period = gtk_button_new_with_label(">>");
+    g_signal_connect(
+        GTK_OBJECT(btn_next_period), "clicked",
+	GTK_SIGNAL_FUNC(next_period), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox5), btn_next_period, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox5, FALSE, FALSE, 0);
+
     hbox2 = gtk_hbox_new(FALSE, 10);
     button = gtk_button_new_with_label("Send");
     gtk_widget_set_size_request(button, 100, 40);
     g_signal_connect(
         GTK_OBJECT(button), "clicked",
-    GTK_SIGNAL_FUNC(send_button_clicked), NULL);
+        GTK_SIGNAL_FUNC(send_button_clicked), NULL);
     gtk_box_pack_end(GTK_BOX(hbox2), button, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
 
@@ -796,7 +891,6 @@ static GtkWidget *create_input_window()
     return window;
 }
 
-GtkWidget *type_window;
 
 static void menu_cb_type(GtkAction *action, void *data)
 {
