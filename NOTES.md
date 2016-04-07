@@ -6,7 +6,7 @@
 - [x] 开发读入文件&转换为base64编码的功能
 - [x] 开发发送端调速功能
 - [x] 开发接收端base64解码的功能
-- [ ] 清理spicy的界面
+- [x] 清理spicy的界面
 
 ### ver 1.1
 - [ ] 添加Encode Text（编码当前文本）功能
@@ -46,6 +46,7 @@
   - [g_key_file_get_integer_list ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-get-integer-list)
 - [GtkFileChooserDialog](https://developer.gnome.org/gtk2/2.24/GtkFileChooserDialog.html)
 - [GtkMessageDialog](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkMessageDialog.html)
+- [gtk_widget_hide_on_delete ()](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkWidget.html#gtk-widget-hide-on-delete)
 
 ### Win32 API
 

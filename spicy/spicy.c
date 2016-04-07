@@ -480,7 +480,7 @@ static void menu_cb_about(GtkAction *action, void *data)
 
 /* !my critical seciton! */
 
-GtkWidget *type_window;
+GtkWidget *type_window = NULL;
 
 void msgbox(char *m)
 {
@@ -601,28 +601,6 @@ static void unload_config()
 #define PR(c) spice_inputs_key_press_and_release(inputs_channel, c)
 #define LSHIFT 0x2A
 #define PR_S(c) do { P(LSHIFT); PR(c); R(LSHIFT); } while(0)
-
-static void menu_cb_inject1(GtkAction *action, void *data)
-{
-   static const char *str =
-       "#include <stdio.h>\n"
-       "\n"
-       "int main(int argc, char *argv[])\n"
-       "{\n"
-       "\tprintf(\"Hello world!\\n\");\n"
-       "\treturn 0;\n"
-       "}\n";
-
-   int len = strlen(str);
-   int i;
-   for (i = 0; i < len; i++) {
-       Finger *pf = &char_map[str[i]];
-       if (pf->shift)
-           PR_S(pf->code);
-       else
-           PR(pf->code);
-   }
-}
 
 GtkWidget *input_text_view;
 GtkWidget *input_send_button;
@@ -761,12 +739,6 @@ static GtkTextBuffer *text_buffer_from_file(FILE *fp)
     /* FIXME: mem can be non-UTF8, which is not allowed here */
     gtk_text_buffer_set_text(text_buffer, mem, len);
 
-    char *z = (char *) g_malloc(len+1);
-    memcpy(z, mem, len);
-    z[len] = '\0';
-    msgbox(z);
-    g_free(z);
-
     g_free(mem);
 
     return text_buffer;
@@ -876,7 +848,6 @@ static void next_period(GtkWidget *button, gpointer data)
     }
 }
 
-
 static GtkWidget *create_input_window()
 {
     GtkWidget *window;
@@ -889,8 +860,12 @@ static GtkWidget *create_input_window()
     GtkWidget *progress_bar;
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+    gtk_window_set_title(GTK_WINDOW(window), "Typer");
+    gtk_window_set_default_size(GTK_WINDOW(window), 800, 400);
     gtk_container_border_width(GTK_CONTAINER(window), 10);
+    g_signal_connect(
+        GTK_OBJECT(window), "delete_event",
+        GTK_SIGNAL_FUNC(gtk_widget_hide_on_delete), NULL);
 
     vbox = gtk_vbox_new(FALSE, 10);
 
@@ -978,8 +953,6 @@ static GtkWidget *create_input_window()
 
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
-    gtk_widget_show_all(window);
-
     input_send_button = button;
     input_text_view = text_view;
     input_progress_bar = progress_bar;
@@ -990,8 +963,11 @@ static GtkWidget *create_input_window()
 
 static void menu_cb_type(GtkAction *action, void *data)
 {
-    type_window = create_input_window();
+    if (!type_window) {
+        type_window = create_input_window();
+    }
 
+    gtk_widget_show_all(type_window);
 }
 
 static gboolean delete_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
@@ -1144,6 +1120,7 @@ static const GtkActionEntry entries[] = {
         .name        = "FileRecentMenu",
         .label       = "_Recent",
     },{
+#if 0
         .name        = "EditMenu",
         .label       = "_Edit",
     },{
@@ -1153,6 +1130,7 @@ static const GtkActionEntry entries[] = {
         .name        = "InputMenu",
         .label       = "_Input",
     },{
+#endif
         .name        = "OptionMenu",
         .label       = "_Options",
     },{
@@ -1162,8 +1140,8 @@ static const GtkActionEntry entries[] = {
         .name        = "HelpMenu",
         .label       = "_Help",
     },{
-        .name        = "InjectMenu",
-        .label       = "In_jectMenu"
+        .name        = "CopyBao",
+        .label       = "CopyBao"
     },{
 
         /* File menu */
@@ -1227,11 +1205,7 @@ static const GtkActionEntry entries[] = {
         .label       = "_About ...",
         .callback    = G_CALLBACK(menu_cb_about),
     },{
-        /* Inject menu */
-        .name        = "First",
-        .label       = "_First",
-        .callback    = G_CALLBACK(menu_cb_inject1)
-    },{
+        /* CopyBao menu */
         .name        = "Type",
         .label       = "_Type",
         .callback    = G_CALLBACK(menu_cb_type)
@@ -1334,6 +1308,7 @@ static char ui_xml[] =
 "      <separator/>\n"
 "      <menuitem action='Close'/>\n"
 "    </menu>\n"
+#if 0
 "    <menu action='EditMenu'>\n"
 "      <menuitem action='CopyToGuest'/>\n"
 "      <menuitem action='PasteFromGuest'/>\n"
@@ -1352,6 +1327,7 @@ static char ui_xml[] =
 "      <menuitem action='SelectUsbDevices'/>\n"
 #endif
 "    </menu>\n"
+#endif
 "    <menu action='OptionMenu'>\n"
 "      <menuitem action='grab-keyboard'/>\n"
 "      <menuitem action='grab-mouse'/>\n"
@@ -1375,8 +1351,7 @@ static char ui_xml[] =
 "    <menu action='HelpMenu'>\n"
 "      <menuitem action='About'/>\n"
 "    </menu>\n"
-"    <menu action='InjectMenu'>\n"
-"      <menuitem action='First'/>\n"
+"    <menu action='CopyBao'>\n"
 "      <menuitem action='Type'/>\n"
 "    </menu>\n"
 "  </menubar>\n"
@@ -1621,6 +1596,9 @@ static SpiceWindow *create_spice_window(spice_connection *conn, SpiceChannel *ch
     state = gtk_widget_get_visible(win->statusbar);
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(toggle), state);
 
+    /* my code here */
+    gtk_widget_set_visible(win->toolbar, FALSE);
+    gtk_widget_set_visible(win->statusbar, FALSE);
 #ifdef USE_SMARTCARD
     gboolean smartcard;
 
