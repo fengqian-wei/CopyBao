@@ -1,4 +1,4 @@
-## TODO
+﻿## TODO
 
 ### ver 1.0
 - [x] 开发一个分派程序，可供用户选择是进入默认虚拟机还是修改版虚拟机
@@ -54,6 +54,7 @@
 - [CoTaskMemFree Function]() - 使用这个而非IMalloc->Free()释放pidl
 - [DialogBoxIndirectParam](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645461(v=vs.85).aspx) - 从二进制对话框“模板”创建对话框
 - [DialogProc callback function](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645469(v=vs.85).aspx)
+- [Changing the Current Directory](https://msdn.microsoft.com/en-us/library/windows/desktop/aa363806(v=vs.85).aspx) - 改变“当前”目录
 
 ### Win32 Resource File
 - [How can I read a compiled resource (.res) file in C#?](http://stackoverflow.com/questions/7982181/how-can-i-read-a-compiled-resource-res-file-in-c)

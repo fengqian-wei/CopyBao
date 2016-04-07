@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <shlwapi.h>
+#include <direct.h> // for chdir()
 #pragma comment(lib, "shlwapi.lib")
 
 int is_space(char c)
@@ -71,6 +72,14 @@ int main(void)
 		int kv = 0;
 		const char *my_client = "..\\spicy\\spicy.exe";
 		const char *required_args[] = { "-h", "-p", "-s", "-w", NULL };
+
+		{
+			char path[256];
+			GetModuleFileName(NULL, path, sizeof(path));
+			PathRemoveFileSpec(path);
+			strcat(path, "\\..\\spicy");
+			SetCurrentDirectory(path);
+		}
 
 		get_item(&cmdline); // skip program path
 		append_str(my_client);
