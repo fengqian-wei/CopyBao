@@ -8,7 +8,13 @@
 - [x] 开发接收端base64解码的功能
 - [ ] 清理spicy的界面
 
-### ver 2.0
+### ver 1.1
+- [ ] 添加Encode Text（编码当前文本）功能
+- 升级协议：区分文本和文件
+  - [ ] 发送端
+  - [ ] 接收端
+- [ ] 添加STOP（停止发送）按钮
+- [ ] 连接超时的检测与提示
 
 ## 参考
 
@@ -28,6 +34,7 @@
     - [gtk_text_buffer_get_text ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-text)
     - [gtk_text_buffer_get_start_iter ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-start-iter)
       - __Hints:__ g_free()
+  - [gtk_text_view_set_editable ()](man.chinaunix.net/develop/GTK+/2.6/gtk/GtkTextView.html#gtk-text-view-set-editable)
 - [GtkScrolledWindow](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html)
   - [gtk_scrolled_window_set_policy ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-policy)
   - [gtk_scrolled_window_set_shadow_type ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-shadow-type)
