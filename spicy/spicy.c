@@ -493,6 +493,8 @@ void msgbox(char *m)
 
 #include "base64.h"
 
+static int current_period_index = 0;
+
 typedef struct _PeriodList
 {
     gint *periods;
@@ -531,6 +533,17 @@ typedef struct _Config
 
 Config the_config = { &default_period_list, &default_recv };
 
+static int find_period(PeriodList *period_list, int desired, int default_value)
+{
+    int i;
+
+    for (i = 0; i < period_list->num; i++)
+        if (period_list->periods[i] == desired)
+            return i;
+
+    return default_value;
+}
+
 static void load_config()
 {
     GKeyFile *config = g_key_file_new();
@@ -538,13 +551,24 @@ static void load_config()
     if (g_key_file_load_from_file (
         config, "config.txt", G_KEY_FILE_NONE, NULL) == FALSE)
     {
-       /* TODO: pop up a warning message box here */
+        GtkWidget *dialog = gtk_message_dialog_new(
+            NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
+            GTK_BUTTONS_OK, "can't load config.txt.");
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
     }
     else {
 	user_period_list.periods = g_key_file_get_integer_list (
             config, "main", "periods", &user_period_list.num, NULL);
 	if (user_period_list.periods && user_period_list.num > 0)
             the_config.period_list = &user_period_list;
+
+        extern int current_period_index;
+        int default_period = g_key_file_get_integer(
+            config, "main", "default_period", NULL);
+        if (default_period > 0)
+            current_period_index = find_period(
+                the_config.period_list, default_period, 0);
 
         user_recv.file = g_key_file_get_string (
 	    config, "recv", "file", NULL);
@@ -553,13 +577,7 @@ static void load_config()
 	        config, "recv", "period", NULL);
 	    int i;
 
-            user_recv.period_index = -1;
-            for (i = 0; i < the_config.period_list->num; i++) {
-                if (the_config.period_list->periods[i] == recv_period) {
-		    user_recv.period_index = i;
-		    break;
-		}
-	    }
+            user_recv.period_index = find_period(the_config.period_list, recv_period, -1);
 
             the_config.recv = &user_recv;
 	}
@@ -666,6 +684,11 @@ static gint do_sending(gpointer data)
    return TRUE;
 }
 
+static int current_period()
+{
+    return the_config.period_list->periods[current_period_index];
+}
+
 static void send_button_clicked(GtkWidget *button, gpointer data)
 {
     gtk_widget_set_sensitive(input_send_button, FALSE);
@@ -675,7 +698,7 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
     tsp.len = strlen(tsp.text);
     tsp.i = -1;
 
-    g_timeout_add(4, do_sending, NULL);
+    g_timeout_add(current_period(), do_sending, NULL);
 
     puts("Start sending...");
 }
@@ -721,11 +744,41 @@ static GtkTextBuffer *text_buffer_from_file(FILE *fp)
     return text_buffer;
 }
 
-static GtkTextBuffer *input_text_buffer_encoded_file;
+static GtkTextBuffer *input_text_buffer_origin;
+static GtkTextBuffer *input_text_buffer_encoded_file = NULL;
+
+static GtkWidget *btn_encode_file;
+static GtkWidget *btn_cancel_encode;
+static GtkWidget *lbl_period;
+static GtkWidget *btn_prev_period;
+static GtkWidget *btn_next_period;
+
+static char *choose_file()
+{
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(
+        "Choose...", NULL,
+	GTK_FILE_CHOOSER_ACTION_OPEN,
+	GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+	NULL);
+    char *path = NULL;
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+	path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+    }
+
+    gtk_widget_destroy(dialog);
+
+    return path;
+}
 
 static void encode_file(GtkWidget *button, gpointer data)
 {
-    FILE *in = fopen("a.txt", "rb");
+    char *file_path = choose_file();
+    if (!file_path)
+        return;
+
+    FILE *in = fopen(file_path, "rb");
     FILE *out = tmpfile();
 
     int insize = get_file_size(in);
@@ -740,15 +793,32 @@ static void encode_file(GtkWidget *button, gpointer data)
     GtkTextBuffer *text_buffer = text_buffer_from_file(out);
     fclose(out);
 
+    input_text_buffer_origin =
+        gtk_text_view_get_buffer(GTK_TEXT_VIEW(input_text_view));
+    g_object_ref(input_text_buffer_origin);
     input_text_buffer_encoded_file = text_buffer;
     gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), text_buffer);
+
+    gtk_widget_set_sensitive(btn_encode_file, FALSE);
+    gtk_widget_set_sensitive(btn_cancel_encode, TRUE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), FALSE);
+}
+
+static void cancel_encode(GtkWidget *button, gpointer data)
+{
+    gtk_text_view_set_buffer(
+        GTK_TEXT_VIEW(input_text_view), input_text_buffer_origin);
+    g_object_unref(input_text_buffer_origin);
+    input_text_buffer_encoded_file = NULL;
+
+    gtk_widget_set_sensitive(btn_encode_file, TRUE);
+    gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), TRUE);
 }
 
 static void load_recv(GtkWidget *button, gpointer data)
 {
     GtkTextBuffer *b;
-
-    msgbox("here");
 
     FILE *fp = fopen(the_config.recv->file, "rb");
     b = text_buffer_from_file(fp);
@@ -756,12 +826,6 @@ static void load_recv(GtkWidget *button, gpointer data)
 
     gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), b);
 }
-
-static GtkWidget *btn_encode_file;
-static GtkWidget *lbl_period;
-static GtkWidget *btn_prev_period;
-static GtkWidget *btn_next_period;
-static int current_period_index = 0;
 
 static void load_current_period()
 {
@@ -806,6 +870,7 @@ static GtkWidget *create_input_window()
 
     vbox = gtk_vbox_new(FALSE, 10);
 
+    /* encoding & recv */
     GtkWidget *hbox4 = gtk_hbox_new(FALSE, 10);
     btn_load_recv = gtk_button_new_with_label("Load Recv");
     if (!the_config.recv->file)
@@ -819,7 +884,12 @@ static GtkWidget *create_input_window()
         GTK_OBJECT(btn_encode_file), "clicked",
         GTK_SIGNAL_FUNC(encode_file), NULL);
     gtk_box_pack_start (GTK_BOX(hbox4), btn_encode_file, FALSE, FALSE, 0);
-
+    btn_cancel_encode = gtk_button_new_with_label("Cancel Encode");
+    gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
+    g_signal_connect(
+        GTK_OBJECT(btn_cancel_encode), "clicked",
+        GTK_SIGNAL_FUNC(cancel_encode), NULL);
+    gtk_box_pack_start (GTK_BOX(hbox4), btn_cancel_encode, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox4, FALSE, FALSE, 0);
 
     hbox1 = gtk_hbox_new(FALSE, 10);
@@ -853,6 +923,7 @@ static GtkWidget *create_input_window()
         FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, FALSE, 0);
 
+    /* period setting */
     GtkWidget *hbox5 = gtk_hbox_new(FALSE, 10);
     gtk_box_pack_start(
         GTK_BOX(hbox5), gtk_label_new("Period: "),
@@ -862,7 +933,8 @@ static GtkWidget *create_input_window()
         GTK_OBJECT(btn_prev_period), "clicked",
 	GTK_SIGNAL_FUNC(prev_period), NULL);
     gtk_box_pack_start(GTK_BOX(hbox5), btn_prev_period, FALSE, FALSE, 0);
-    lbl_period = gtk_label_new("0 ms");
+    lbl_period = gtk_label_new(NULL);
+    load_current_period();
     gtk_box_pack_start(GTK_BOX(hbox5), lbl_period, FALSE, FALSE, 0);
     btn_next_period = gtk_button_new_with_label(">>");
     g_signal_connect(
