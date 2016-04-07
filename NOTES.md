@@ -8,7 +8,13 @@
 - [x] 开发接收端base64解码的功能
 - [ ] 清理spicy的界面
 
-### ver 2.0
+### ver 1.1
+- [ ] 添加Encode Text（编码当前文本）功能
+- 升级协议：区分文本和文件
+  - [ ] 发送端
+  - [ ] 接收端
+- [ ] 添加STOP（停止发送）按钮
+- [ ] 连接超时的检测与提示
 
 ## 参考
 
@@ -28,6 +34,7 @@
     - [gtk_text_buffer_get_text ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-text)
     - [gtk_text_buffer_get_start_iter ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-start-iter)
       - __Hints:__ g_free()
+  - [gtk_text_view_set_editable ()](man.chinaunix.net/develop/GTK+/2.6/gtk/GtkTextView.html#gtk-text-view-set-editable)
 - [GtkScrolledWindow](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html)
   - [gtk_scrolled_window_set_policy ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-policy)
   - [gtk_scrolled_window_set_shadow_type ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-shadow-type)
@@ -37,6 +44,7 @@
   - [g_key_file_load_from_file ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-load-from-file)
   - [g_key_file_get_integer_list ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-get-integer-list)
 - [GtkFileChooserDialog](https://developer.gnome.org/gtk2/2.24/GtkFileChooserDialog.html)
+- [GtkMessageDialog](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkMessageDialog.html)
 
 ### Win32 API
 
@@ -55,7 +63,11 @@
 
 ### misc
 - [fstat](http://linux.die.net/man/2/fstat) - 获得文件长度
+- [tmpfile](https://msdn.microsoft.com/zh-cn/library/x8x7sakw.aspx) - 创建一个临时文件并返回其FILE指针
 
 ## 2016.3.30
 - 学宝虚拟机每次重新启动（cold & hot），都会使用新的端口号和密码。
 - 能否通过给virt-viewer编写扩展来解决问题？
+
+## 2016.4.7
+- 把read_file改成了接受一个FILE \*参数（而不是文件路径），之后读取文件到文本框的的功能失效。后将fopen("r")改成了"rb"，解决了问题。
