@@ -37,6 +37,7 @@
   - [g_key_file_load_from_file ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-load-from-file)
   - [g_key_file_get_integer_list ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-get-integer-list)
 - [GtkFileChooserDialog](https://developer.gnome.org/gtk2/2.24/GtkFileChooserDialog.html)
+- [GtkMessageDialog](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkMessageDialog.html)
 
 ### Win32 API
 
@@ -55,7 +56,11 @@
 
 ### misc
 - [fstat](http://linux.die.net/man/2/fstat) - 获得文件长度
+- [tmpfile](https://msdn.microsoft.com/zh-cn/library/x8x7sakw.aspx) - 创建一个临时文件并返回其FILE指针
 
 ## 2016.3.30
 - 学宝虚拟机每次重新启动（cold & hot），都会使用新的端口号和密码。
 - 能否通过给virt-viewer编写扩展来解决问题？
+
+## 2016.4.7
+- 把read_file改成了接受一个FILE \*参数（而不是文件路径），之后读取文件到文本框的的功能失效。后将fopen("r")改成了"rb"，解决了问题。
