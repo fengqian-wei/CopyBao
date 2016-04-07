@@ -34,6 +34,7 @@
     - [gtk_text_buffer_get_text ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-text)
     - [gtk_text_buffer_get_start_iter ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-start-iter)
       - __Hints:__ g_free()
+    - [g_object_ref ()](https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-ref)
   - [gtk_text_view_set_editable ()](man.chinaunix.net/develop/GTK+/2.6/gtk/GtkTextView.html#gtk-text-view-set-editable)
 - [GtkScrolledWindow](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html)
   - [gtk_scrolled_window_set_policy ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-policy)
@@ -71,3 +72,5 @@
 
 ## 2016.4.7
 - 把read_file改成了接受一个FILE \*参数（而不是文件路径），之后读取文件到文本框的的功能失效。后将fopen("r")改成了"rb"，解决了问题。
+- 在receiver的实现中，也是使用w而不是wb模式打开的将要写入内容的文件。这导致接收到的文件存盘时，长度莫名增加。而后加上'b'修复了bug。
+- 为<code>GtkTextView</code>设置了新的TextBuffer后，会将旧的TextBuffer的引用计数减一。此前如果用<code>gtk_text_view_get_buffer()</code>保存了TextBuffer，该TextBuffer就会失效，因为该函数不会增加TextBuffer的引用计数。因此如果要避免旧的TextBuffer失效，在获取、保存它之后，就要用<code>g_object_ref()</code>增加它的引用计数。

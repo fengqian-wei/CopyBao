@@ -111,7 +111,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 
 				if(GetSaveFileName(&ofn)) {
 					int len = GetWindowTextLength(GetDlgItem(hwnd, IDC_DATA)) + 1;
-					FILE *fp = fopen(path, "w");
+					FILE *fp = fopen(path, "wb");
 					u8 *buf = (u8 *)malloc(len);
 					u8 *p = buf + 8;
 					int i;
