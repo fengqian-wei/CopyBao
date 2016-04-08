@@ -844,13 +844,16 @@ static void reset_button_clicked(GtkWidget *button, gpointer data)
 
 static void load_recv(GtkWidget *button, gpointer data)
 {
-    GtkTextBuffer *b;
+    char *mem;
+    int len;
 
     FILE *fp = fopen(the_config.recv->file, "rb");
-    b = text_buffer_from_file(fp);
+    read_file(fp, &mem, &len);
     fclose(fp);
 
-    gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), b);
+    gtk_text_buffer_set_text(input_text_buffer_origin, mem, len);
+
+    g_free(mem);
 }
 
 static void load_current_period()
