@@ -839,7 +839,7 @@ static void reset_button_clicked(GtkWidget *button, gpointer data)
     gtk_text_buffer_set_text(input_text_buffer_origin, "", -1);
 
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(input_progress_bar), 0);
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(input_progress_bar), "0.0%%");
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(input_progress_bar), "0.0%");
 }
 
 static void load_recv(GtkWidget *button, gpointer data)
@@ -932,8 +932,8 @@ static GtkWidget *create_input_window()
     text_view = gtk_text_view_new();
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_CHAR);
     input_text_buffer_origin =
-        gtk_text_view_get_buffer(GTK_TEXT_VIEW(input_text_view));
-    g_object_ref(input_text_buffer_origin); 
+        gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    g_object_ref(input_text_buffer_origin);
     scrollwin = gtk_scrolled_window_new(
       NULL,
       gtk_text_view_get_vadjustment(GTK_TEXT_VIEW(text_view)));
