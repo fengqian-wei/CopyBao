@@ -604,6 +604,7 @@ static void unload_config()
 
 GtkWidget *input_text_view;
 GtkWidget *input_send_button;
+GtkWidget *input_stop_button;
 GtkWidget *input_progress_bar;
 
 static gchar *get_input_text()
@@ -623,6 +624,7 @@ typedef struct _SendingProcess
     gchar *text;
     int len;
     int i;
+    gint timeout;
 } SendingProcess;
 
 SendingProcess tsp; // the sending process
@@ -662,6 +664,16 @@ static void send_enable_buttons(gboolean end)
     }
 }
 
+static void stop_sending()
+{
+    g_free(tsp.text);
+    gtk_widget_set_sensitive(input_send_button, TRUE);
+    gtk_widget_hide(input_stop_button);
+    gtk_widget_set_sensitive(input_text_view, TRUE);
+
+    send_enable_buttons(TRUE);
+}
+
 static gint do_sending(gpointer data)
 {
     tsp.i++;
@@ -678,11 +690,7 @@ static gint do_sending(gpointer data)
     }
 
     if(tsp.i == tsp.len) {
-        g_free(tsp.text);
-        gtk_widget_set_sensitive(input_send_button, TRUE);
-	gtk_widget_set_sensitive(input_text_view, TRUE);
-
-        send_enable_buttons(TRUE);
+        stop_sending();
         return FALSE;
     }
     send_one_char(tsp.text[tsp.i]);
@@ -700,15 +708,22 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
     send_enable_buttons(FALSE);
 
     gtk_widget_set_sensitive(input_send_button, FALSE);
+    gtk_widget_show(input_stop_button);
     gtk_widget_set_sensitive(input_text_view, FALSE);
 
     tsp.text = get_input_text();
     tsp.len = strlen(tsp.text);
     tsp.i = -1;
 
-    g_timeout_add(current_period(), do_sending, NULL);
+    tsp.timeout = g_timeout_add(current_period(), do_sending, NULL);
 
     puts("Start sending...");
+}
+
+static void stop_button_clicked(GtkWidget *button, gpointer data)
+{
+    g_source_remove(tsp.timeout);
+    stop_sending();
 }
 
 long get_file_size(FILE *fp)
@@ -795,6 +810,7 @@ static void encode_file(GtkWidget *button, gpointer data)
 
     gtk_widget_set_sensitive(btn_encode_file, FALSE);
     gtk_widget_set_sensitive(btn_cancel_encode, TRUE);
+    gtk_widget_set_sensitive(btn_load_recv, FALSE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), FALSE);
     encode_state = 1;
 }
@@ -808,6 +824,7 @@ static void cancel_encode(GtkWidget *button, gpointer data)
 
     gtk_widget_set_sensitive(btn_encode_file, TRUE);
     gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
+    gtk_widget_set_sensitive(btn_load_recv, TRUE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), TRUE);
     encode_state = 0;
 }
@@ -856,9 +873,10 @@ static GtkWidget *create_input_window()
     GtkWidget *label, *label2;
     GtkWidget *scrollwin;
     GtkWidget *text_view;
-    GtkWidget *button;
+    GtkWidget *button, *button2;
     GtkWidget *progress_bar;
 
+    /* window */
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Typer");
     gtk_window_set_default_size(GTK_WINDOW(window), 800, 400);
@@ -897,6 +915,7 @@ static GtkWidget *create_input_window()
     gtk_box_pack_start(GTK_BOX(vbox), hbox1,
                        FALSE, FALSE, 0);
 
+    /* center text view */
     text_view = gtk_text_view_new();
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_CHAR);
     scrollwin = gtk_scrolled_window_new(
@@ -913,6 +932,7 @@ static GtkWidget *create_input_window()
     gtk_box_pack_start(GTK_BOX(vbox), scrollwin,
                        TRUE, TRUE, 0);
 
+    /* progress bar */
     label2 = gtk_label_new("Progress: ");
     progress_bar = gtk_progress_bar_new();
     hbox3 = gtk_hbox_new(FALSE, 10);
@@ -942,6 +962,7 @@ static GtkWidget *create_input_window()
     gtk_box_pack_start(GTK_BOX(hbox5), btn_next_period, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox5, FALSE, FALSE, 0);
 
+    /* buttons on the BOTTOM */
     hbox2 = gtk_hbox_new(FALSE, 10);
     button = gtk_button_new_with_label("Send");
     gtk_widget_set_size_request(button, 100, 40);
@@ -949,13 +970,23 @@ static GtkWidget *create_input_window()
         GTK_OBJECT(button), "clicked",
         GTK_SIGNAL_FUNC(send_button_clicked), NULL);
     gtk_box_pack_end(GTK_BOX(hbox2), button, FALSE, FALSE, 0);
+    button2 = gtk_button_new_with_label("STOP!");
+    gtk_widget_set_size_request(button2, 100, 40);
+    g_signal_connect(
+        GTK_OBJECT(button2), "clicked",
+        GTK_SIGNAL_FUNC(stop_button_clicked), NULL);
+    gtk_box_pack_end(GTK_BOX(hbox2), button2, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
 
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
     input_send_button = button;
+    input_stop_button = button2;
     input_text_view = text_view;
     input_progress_bar = progress_bar;
+
+    gtk_widget_show_all(window);
+    gtk_widget_hide(button2);
 
     return window;
 }
@@ -967,7 +998,7 @@ static void menu_cb_type(GtkAction *action, void *data)
         type_window = create_input_window();
     }
 
-    gtk_widget_show_all(type_window);
+    gtk_widget_show(type_window);
 }
 
 static gboolean delete_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
