@@ -458,12 +458,9 @@ static void menu_cb_statusbar(GtkToggleAction *action, gpointer data)
 
 static void menu_cb_about(GtkAction *action, void *data)
 {
-    char *comments = "gtk test client app for the\n"
-        "spice remote desktop protocol";
-    static const char *copyright = "(c) 2010 Red Hat";
-    static const char *website = "http://www.spice-space.org";
-    static const char *authors[] = { "Gerd Hoffmann <kraxel@redhat.com>",
-                               "Marc-André Lureau <marcandre.lureau@redhat.com>",
+    char *comments = "Enable COPY for\nXueBao spice client";
+    static const char *copyright = "(copyleft) 2016";
+    static const char *authors[] = { "Mr. Unknown",
                                NULL };
     SpiceWindow *win = data;
 
@@ -472,7 +469,6 @@ static void menu_cb_about(GtkAction *action, void *data)
                           "comments",        comments,
                           "copyright",       copyright,
                           "logo-icon-name",  GTK_STOCK_ABOUT,
-                          "website",         website,
                           "version",         PACKAGE_VERSION,
                           "license",         "LGPLv2.1",
                           NULL);
