@@ -605,6 +605,7 @@ static void unload_config()
 GtkWidget *input_text_view;
 GtkWidget *input_send_button;
 GtkWidget *input_stop_button;
+GtkWidget *input_reset_button;
 GtkWidget *input_progress_bar;
 
 static gchar *get_input_text()
@@ -669,6 +670,7 @@ static void stop_sending()
     g_free(tsp.text);
     gtk_widget_set_sensitive(input_send_button, TRUE);
     gtk_widget_hide(input_stop_button);
+    gtk_widget_set_sensitive(input_reset_button, TRUE);
     gtk_widget_set_sensitive(input_text_view, TRUE);
 
     send_enable_buttons(TRUE);
@@ -709,6 +711,7 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
 
     gtk_widget_set_sensitive(input_send_button, FALSE);
     gtk_widget_show(input_stop_button);
+    gtk_widget_set_sensitive(input_reset_button, FALSE);
     gtk_widget_set_sensitive(input_text_view, FALSE);
 
     tsp.text = get_input_text();
@@ -802,9 +805,6 @@ static void encode_file(GtkWidget *button, gpointer data)
     GtkTextBuffer *text_buffer = text_buffer_from_file(out);
     fclose(out);
 
-    input_text_buffer_origin =
-        gtk_text_view_get_buffer(GTK_TEXT_VIEW(input_text_view));
-    g_object_ref(input_text_buffer_origin);
     input_text_buffer_encoded_file = text_buffer;
     gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), text_buffer);
 
@@ -815,11 +815,12 @@ static void encode_file(GtkWidget *button, gpointer data)
     encode_state = 1;
 }
 
-static void cancel_encode(GtkWidget *button, gpointer data)
+/* TODO: ? add function set_encode_state */
+
+static void _cancel_encode()
 {
     gtk_text_view_set_buffer(
         GTK_TEXT_VIEW(input_text_view), input_text_buffer_origin);
-    g_object_unref(input_text_buffer_origin);
     input_text_buffer_encoded_file = NULL;
 
     gtk_widget_set_sensitive(btn_encode_file, TRUE);
@@ -827,6 +828,22 @@ static void cancel_encode(GtkWidget *button, gpointer data)
     gtk_widget_set_sensitive(btn_load_recv, TRUE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), TRUE);
     encode_state = 0;
+}
+
+static void cancel_encode(GtkWidget *button, gpointer data)
+{
+    _cancel_encode();
+}
+
+static void reset_button_clicked(GtkWidget *button, gpointer data)
+{
+    if (encode_state > 0)
+        _cancel_encode();
+
+    gtk_text_buffer_set_text(input_text_buffer_origin, "", -1);
+
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(input_progress_bar), 0);
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(input_progress_bar), "0.0%%");
 }
 
 static void load_recv(GtkWidget *button, gpointer data)
@@ -873,7 +890,7 @@ static GtkWidget *create_input_window()
     GtkWidget *label, *label2;
     GtkWidget *scrollwin;
     GtkWidget *text_view;
-    GtkWidget *button, *button2;
+    GtkWidget *button, *button2, *button3;
     GtkWidget *progress_bar;
 
     /* window */
@@ -918,6 +935,9 @@ static GtkWidget *create_input_window()
     /* center text view */
     text_view = gtk_text_view_new();
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_CHAR);
+    input_text_buffer_origin =
+        gtk_text_view_get_buffer(GTK_TEXT_VIEW(input_text_view));
+    g_object_ref(input_text_buffer_origin); 
     scrollwin = gtk_scrolled_window_new(
       NULL,
       gtk_text_view_get_vadjustment(GTK_TEXT_VIEW(text_view)));
@@ -976,12 +996,20 @@ static GtkWidget *create_input_window()
         GTK_OBJECT(button2), "clicked",
         GTK_SIGNAL_FUNC(stop_button_clicked), NULL);
     gtk_box_pack_end(GTK_BOX(hbox2), button2, FALSE, FALSE, 0);
+    button3 = gtk_button_new_with_label("Reset");
+    gtk_widget_set_size_request(button3, 100, 40);
+    g_signal_connect(
+        GTK_OBJECT(button3), "clicked",
+        GTK_SIGNAL_FUNC(reset_button_clicked), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox2), button3, FALSE, FALSE, 0);
+
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
 
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
     input_send_button = button;
     input_stop_button = button2;
+    input_reset_button = button3;
     input_text_view = text_view;
     input_progress_bar = progress_bar;
 
