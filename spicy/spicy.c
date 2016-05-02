@@ -43,6 +43,8 @@
 
 #include "spicy-connect.h"
 
+#include "spice-file-transfer-task.h"
+
 typedef struct spice_connection spice_connection;
 
 enum {
@@ -63,6 +65,7 @@ typedef struct _SpiceWindow SpiceWindow;
 typedef struct _SpiceWindowClass SpiceWindowClass;
 
 SpiceInputsChannel *inputs_channel;
+SpiceMainChannel *main_channel;
 
 struct _SpiceWindow {
     GObject          object;
@@ -273,7 +276,9 @@ static void menu_cb_copy(GtkAction *action, void *data)
 {
     SpiceWindow *win = data;
 
-    spice_gtk_session_copy_to_guest(win->conn->gtk_session);
+//    spice_gtk_session_copy_to_guest(win->conn->gtk_session);
+    spice_display_copy_to_guest(SPICE_DISPLAY(win->spice));
+    msgbox("ok");
 }
 
 static void menu_cb_paste(GtkAction *action, void *data)
@@ -1032,6 +1037,20 @@ static void menu_cb_type(GtkAction *action, void *data)
     gtk_widget_show(type_window);
 }
 
+static void transfer_ready(GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+    msgbox("!");
+}
+
+static void menu_cb_test1(GtkAction *action, void *data)
+{
+    GFile* sources[2] = { NULL, NULL };
+
+    msgbox("?");
+    sources[0] = g_file_new_for_path("E:\\lake.jpg");
+    spice_main_file_copy_async(main_channel, sources, G_FILE_COPY_NONE, NULL, NULL, NULL, transfer_ready, NULL);
+}
+
 static gboolean delete_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     SpiceWindow *win = data;
@@ -1271,6 +1290,10 @@ static const GtkActionEntry entries[] = {
         .name        = "Type",
         .label       = "_Type",
         .callback    = G_CALLBACK(menu_cb_type)
+    },{
+        .name        = "Test1",
+        .label       = "_Test1",
+        .callback    = G_CALLBACK(menu_cb_test1)
     }
 };
 
@@ -1415,6 +1438,7 @@ static char ui_xml[] =
 "    </menu>\n"
 "    <menu action='CopyBao'>\n"
 "      <menuitem action='Type'/>\n"
+"      <menuitem action='Test1'/>\n"
 "    </menu>\n"
 "  </menubar>\n"
 "  <toolbar action='ToolBar'>\n"
@@ -1659,7 +1683,7 @@ static SpiceWindow *create_spice_window(spice_connection *conn, SpiceChannel *ch
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(toggle), state);
 
     /* my code here */
-    gtk_widget_set_visible(win->toolbar, FALSE);
+    gtk_widget_set_visible(win->toolbar, TRUE);
     gtk_widget_set_visible(win->statusbar, FALSE);
 #ifdef USE_SMARTCARD
     gboolean smartcard;
@@ -2035,7 +2059,7 @@ static void port_data(SpicePortChannel *port,
     }
 }
 
-#if 0
+
 typedef struct {
     GtkWidget *vbox;
     GtkWidget *hbox;
@@ -2170,16 +2194,14 @@ static void spice_connection_add_task(spice_connection *conn, SpiceFileTransferT
     gtk_box_pack_start(GTK_BOX(content),
                        widgets->vbox, TRUE, TRUE, 6);
 }
-#endif
 
-#if 0
+
 static void new_file_transfer(SpiceMainChannel *main, SpiceFileTransferTask *task, gpointer user_data)
 {
     spice_connection *conn = user_data;
     g_debug("new file transfer task");
     spice_connection_add_task(conn, task);
 }
-#endif
 
 static void channel_new(SpiceSession *s, SpiceChannel *channel, gpointer data)
 {
@@ -2199,12 +2221,11 @@ static void channel_new(SpiceSession *s, SpiceChannel *channel, gpointer data)
                          G_CALLBACK(main_mouse_update), conn);
         g_signal_connect(channel, "main-agent-update",
                          G_CALLBACK(main_agent_update), conn);
-#if 0
         g_signal_connect(channel, "new-file-transfer",
                          G_CALLBACK(new_file_transfer), conn);
-#endif
         main_mouse_update(channel, conn);
         main_agent_update(channel, conn);
+        main_channel = SPICE_MAIN_CHANNEL(channel);
     }
 
     if (SPICE_IS_DISPLAY_CHANNEL(channel)) {
@@ -2316,11 +2337,9 @@ static spice_connection *connection_new(void)
         g_signal_connect(manager, "device-error",
                          G_CALLBACK(usb_connect_failed), NULL);
     }
-#if 0
     conn->transfers = g_hash_table_new_full(g_direct_hash, g_direct_equal,
                                             g_object_unref,
                                             (GDestroyNotify)transfer_task_widgets_free);
-#endif
     connections++;
     SPICE_DEBUG("%s (%d)", __FUNCTION__, connections);
     return conn;
