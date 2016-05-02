@@ -49,6 +49,13 @@
 - [GtkMessageDialog](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkMessageDialog.html)
 - [gtk_widget_hide_on_delete ()](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkWidget.html#gtk-widget-hide-on-delete)
 - [g_locale_from_utf8 ()](https://developer.gnome.org/glib/unstable/glib-Character-Set-Conversion.html#g-locale-from-utf8)
+- [spice_main_file_copy_async()](http://www.spice-space.org/api/spice-gtk/SpiceMainChannel.html#spice-main-file-copy-async)
+  - [The “new-file-transfer” signal](http://www.spice-space.org/api/spice-gtk/SpiceMainChannel.html#SpiceMainChannel-new-file-transfer)
+  - [GCancellable](https://developer.gnome.org/gio/unstable/GCancellable.html)
+  - [GFile](https://developer.gnome.org/gio/stable/GFile.html#GFileCopyFlags)
+  - [GAsyncResult](https://developer.gnome.org/gio/stable/GAsyncResult.html#GAsyncReadyCallback)
+- [glib-genmarshal](https://developer.gnome.org/gobject/stable/glib-genmarshal.html)
+  - 用于实现<code>spice-marshal.txt</code>→<code>spice-marshal{.h, .c}</code>的转换
 
 ### Win32 API
 
@@ -82,3 +89,22 @@
 ## 2016.4.8
 - Windows的文本框有长度限制，超过某个长度后，就无法再增加字符。这会导致大文件（大约25kB左右）传输失败。
 
+## 2016.5.2
+我尝试了SPICE协议自带的文件传送功能，传送1M的文件只需2s，效果很好。
+
+问题有两个：
+- **Fedora提供的MinGW的spice-gtk包版本太低。**它使用的还是旧版的文件传输，示例程序里文件传输部分的代码是不可用的，因为这个版本根本没有emit信号<code>new-file-transfer</code>。
+  - 所以<code>spice.c</code>里面那个显示文件传输进度的对话框是不会显示的。
+    - 不过使用<code>spice_main_file_copy_async()</code>的回调函数也能简单监控文件传输的进度。
+  - 判断文件传输是否为新版的一种方法是：检查<code>/usr/i686-w64-mingw32/sys-root/mingw/include/spice-client-glib-2.0/</code>中有没有<code>spice-file-transfer.h</code>。
+    - 注意：并不是头文件的问题，是spice-gtk库的问题。
+  - spice客户端提供文件传输功能的源文件是spice-gtk仓库中<code>channel-main.c</code>。关于文件传输功能的改版，参见[这次commit](https://github.com/SPICE/spice-gtk/commit/2c26ee3c37691f51e1746d9d1004635dd356c28a)。
+- **远程机器上的agent程序版本太低。**根本不支持接收文件。必须复制新版agent进去。
+  - 远程机器上的vdagent可以在<code>C:\Program Files\SaiweiGuestAgent\vdagent\</code>目录找到。
+  - 可以通过搜索vdagent.exe是否包含<code>%u %s</code>来判断它是否支持文件传送，参见[这次commit](https://cgit.freedesktop.org/spice/win32/vd_agent/commit/?id=71193f658131d31b28b6d9afdd385111bc32377b)。
+    - 新版和旧版agent程序“属性”中的版本都是0.5.10.0，所以没办法根据这个确定新旧。
+  - agent可以在[官方下载页面](http://www.spice-space.org/download.html)下载。
+    - Guest/Windows Binaries
+    - 可以用7-zip打开安装程序，从中找出32位的<code>vdservice.exe</code>和<code>vdagent.exe</code>。
+  - 似乎只需要复制<code>vdagent.exe</code>即可，该文件压缩后达近240K。
+  - 替换远程机器上的agent前，先从其任务管理器中结束到两个vd\*进程，然后删除掉两个程序的文件，接下来复制新文件至那个文件夹，最后运行文件夹里的<code>upgrade.bat</code>。
