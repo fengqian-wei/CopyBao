@@ -106,5 +106,6 @@
   - agent可以在[官方下载页面](http://www.spice-space.org/download.html)下载。
     - Guest/Windows Binaries
     - 可以用7-zip打开安装程序，从中找出32位的<code>vdservice.exe</code>和<code>vdagent.exe</code>。
-  - 似乎只需要复制<code>vdagent.exe</code>即可，该文件压缩后达近240K。
-  - 替换远程机器上的agent前，先从其任务管理器中结束到两个vd\*进程，然后删除掉两个程序的文件，接下来复制新文件至那个文件夹，最后运行文件夹里的<code>upgrade.bat</code>。
+  - 只需要替换<code>vdagent.exe</code>即可，该文件压缩后达近240K，传输过去大概需要1个多小时。
+  - 替换远程机器上的agent前，先从其任务管理器中结束到两个vd\*进程，然后删除掉<code>vdagent.exe</code>，接下来复制新文件至那个文件夹，最后运行文件夹里的<code>upgrade.bat</code>。
+  - 新版的vdagent只比老版本大了34K，能否通过二进制patch，只复制多出来的部分进去，实现替换，从而减少传输量？
