@@ -100,7 +100,7 @@
     - 注意：并不是头文件的问题，是spice-gtk库的问题。
   - spice客户端提供文件传输功能的源文件是spice-gtk仓库中<code>channel-main.c</code>。关于文件传输功能的改版，参见[这次commit](https://github.com/SPICE/spice-gtk/commit/2c26ee3c37691f51e1746d9d1004635dd356c28a)。
 - **远程机器上的agent程序版本太低。**根本不支持接收文件。必须复制新版agent进去。
-  - 远程机器上的vdagent可以在<code>C:\Program Files\SaiweiGuestAgent\vdagent\</code>目录找到。
+  - 远程机器上的vdagent可以在<code>C:\\Program Files\\SaiweiGuestAgent\\vdagent\\</code>目录找到。
   - 可以通过搜索vdagent.exe是否包含<code>%u %s</code>来判断它是否支持文件传送，参见[这次commit](https://cgit.freedesktop.org/spice/win32/vd_agent/commit/?id=71193f658131d31b28b6d9afdd385111bc32377b)。
     - 新版和旧版agent程序“属性”中的版本都是0.5.10.0，所以没办法根据这个确定新旧。
   - agent可以在[官方下载页面](http://www.spice-space.org/download.html)下载。
