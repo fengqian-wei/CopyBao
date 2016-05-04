@@ -73,6 +73,15 @@
 - [coreutils/base64.c](http://git.savannah.gnu.org/cgit/coreutils.git/tree/src/base64.c)
 - [gnulib/base64.c](http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob;f=lib/base64.c;h=1a8bfce7a534f83f19a093432bafe883f16de9b1;hb=HEAD)
 
+### C# ###
+- [Control.InValidate vs. Control.Refresh()?](https://bytes.com/topic/c-sharp/answers/244445-control-invalidate-vs-control-refresh)
+- [String.Format for Hex](http://stackoverflow.com/questions/11618387/string-format-for-hex)
+- [Reference Source](http://referencesource.microsoft.com/)
+- [How do I encode and decode a base64 string?](http://stackoverflow.com/questions/11743160/how-do-i-encode-and-decode-a-base64-string)
+- [C#: Get complete desktop size?](http://stackoverflow.com/questions/1317235/c-get-complete-desktop-size)
+- [C# - Reading from and Writing into Binary files](http://www.tutorialspoint.com/csharp/csharp_binary_files.htm)
+- [/target (C# Compiler Options)](https://msdn.microsoft.com/zh-cn/library/6h25dztx.aspx)
+
 ### misc
 - [fstat](http://linux.die.net/man/2/fstat) - 获得文件长度
 - [tmpfile](https://msdn.microsoft.com/zh-cn/library/x8x7sakw.aspx) - 创建一个临时文件并返回其FILE指针
