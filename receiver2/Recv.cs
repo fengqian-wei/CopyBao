@@ -40,7 +40,7 @@ namespace Recv2
             bUL = b0;
             bUR = b0;
 
-            Font font = new Font("宋体", 12F);
+            Font font = new Font("\u5B8B\u4F53", 12F);
             int x = 100;
 
             lbSt = new Label();
@@ -69,7 +69,7 @@ namespace Recv2
             lbHelp.Font = font;
 
             tm1 = new Timer();
-            tm1.Interval = 1000;
+            tm1.Interval = 200;
             tm1.Tick += new System.EventHandler(this.tm1_Tick);
 
             Controls.Add(lbSize);
@@ -79,6 +79,7 @@ namespace Recv2
 
             Paint += new PaintEventHandler(OnPaint);
             KeyPress += new KeyPressEventHandler(OnKeyPress);
+            FormClosed += new FormClosedEventHandler(OnClosed);
         }
 
         Brush b0, bR, bG, bB;
@@ -224,7 +225,7 @@ namespace Recv2
             Invalidate();
         }
 
-        private void OnFormClosed(object sender, FormClosedEventArgs e)
+        private void OnClosed(object sender, FormClosedEventArgs e)
         {
             CancelFile();
         }
