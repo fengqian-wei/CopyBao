@@ -2,10 +2,10 @@
 
 unsigned csharp_hashcode(const char *s)
 {
-	int hash1 = (5381 << 16) + 5381;
+    int hash1 = (5381 << 16) + 5381;
     int hash2 = hash1;
 
-	const char *p = s;
+    const char *p = s;
     int len = strlen(s);
     while (len > 2)
     {
@@ -22,3 +22,4 @@ unsigned csharp_hashcode(const char *s)
 
     return hash1 + (hash2 * 1566083941);
 }
+
