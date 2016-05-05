@@ -53,7 +53,11 @@ static void end_sending()
 {
     fclose(fp);
 
+    dtp_stop();
+
     dtp_state_update = NULL;
+
+    gtk_widget_destroy(GTK_WIDGET(window));
 }
 
 static void abort_sending()
@@ -106,12 +110,16 @@ static GtkWindow *create_window()
 
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(window, "File Sender");
-    
+    gtk_window_set_default_size(window, 400, 200);
+
     /* hide max/min button */
     gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DIALOG);
 
     /* disable close button */
     gtk_window_set_deletable(window, FALSE);
+
+    /* modal */
+    gtk_window_set_modal(window, TRUE);
 
     vbox = GTK_BOX(gtk_vbox_new(FALSE, 10));
 

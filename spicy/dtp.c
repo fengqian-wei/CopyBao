@@ -97,8 +97,8 @@ static void on_status_change()
     else if (state == 3) {
         if (status == 0) {
 	    if (result == 2) {
-	        g_callback(g_user_data);
 		switch_state(0);
+	        g_callback(g_user_data);
 	    }
 	    else {
 		length = strlen(buffer);
@@ -133,5 +133,13 @@ void dtp_transfer(char *str, void (*callback)(void *), void *user_data)
     else {
         enter_sending();
     }
+}
+
+void dtp_stop()
+{
+    if (state == 2)
+        g_source_remove(timeout);
+
+    switch_state(0);
 }
 
