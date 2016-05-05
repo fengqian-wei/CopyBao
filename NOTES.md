@@ -84,6 +84,11 @@
 - [C# - Reading from and Writing into Binary files](http://www.tutorialspoint.com/csharp/csharp_binary_files.htm)
 - [/target (C# Compiler Options)](https://msdn.microsoft.com/zh-cn/library/6h25dztx.aspx)
 
+### SPICE
+- [Spice-GTK Reference Manual](http://www.spice-space.org/api/spice-gtk/index.html)
+- [The “display-primary-create” signal](http://www.spice-space.org/api/spice-gtk/SpiceDisplayChannel.html#SpiceDisplayChannel-display-primary-create)
+- [spicy-screenshot.c](https://github.com/SPICE/spice-gtk/blob/master/src/spicy-screenshot.c)
+
 ### misc
 - [fstat](http://linux.die.net/man/2/fstat) - 获得文件长度
 - [tmpfile](https://msdn.microsoft.com/zh-cn/library/x8x7sakw.aspx) - 创建一个临时文件并返回其FILE指针
