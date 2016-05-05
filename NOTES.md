@@ -58,6 +58,7 @@
   - 用于实现<code>spice-marshal.txt</code>→<code>spice-marshal{.h, .c}</code>的转换
 - [gtk_window_set_deletable ()](https://developer.gnome.org/gtk2/2.24/GtkWindow.html#gtk-window-set-deletable)可用来禁用关闭按钮
 - [gtk_window_set_type_hint ()](https://developer.gnome.org/gtk2/2.24/GtkWindow.html#gtk-window-set-type-hint)设置为[GDK_WINDOW_TYPE_HINT_DIALOG](https://developer.gnome.org/gdk2/2.24/gdk2-Windows.html#GdkWindowTypeHint)可用来隐藏最大最小化按钮
+- [g_message ()](https://developer.gnome.org/glib/unstable/glib-Message-Logging.html#g-message) 使用g_message等函数记录日志
 
 ### Win32 API
 
@@ -67,6 +68,8 @@
 - [DialogBoxIndirectParam](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645461(v=vs.85).aspx) - 从二进制对话框“模板”创建对话框
 - [DialogProc callback function](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645469(v=vs.85).aspx)
 - [Changing the Current Directory](https://msdn.microsoft.com/en-us/library/windows/desktop/aa363806(v=vs.85).aspx) - 改变“当前”目录
+- [Creation of a Console (Windows)](https://msdn.microsoft.com/en-us/library/windows/desktop/ms682528(v=vs.85).aspx) A process can also create a console by specifying the **CREATE_NEW_CONSOLE** flag in a call to CreateProcess. 传递这参数给CreateProcess，可以让spicy.exe显示出命令行窗口。
+  - 参考[此页面](http://stackoverflow.com/questions/780465/winapi-createprocess-but-hide-the-process-window)学习CreateProcess的用法
 
 ### Win32 Resource File
 - [How can I read a compiled resource (.res) file in C#?](http://stackoverflow.com/questions/7982181/how-can-i-read-a-compiled-resource-res-file-in-c)
@@ -86,7 +89,11 @@
 
 ### SPICE
 - [Spice-GTK Reference Manual](http://www.spice-space.org/api/spice-gtk/index.html)
-- [The “display-primary-create” signal](http://www.spice-space.org/api/spice-gtk/SpiceDisplayChannel.html#SpiceDisplayChannel-display-primary-create)
+- [DisplayChannel: The “display-primary-create” signal](http://www.spice-space.org/api/spice-gtk/SpiceDisplayChannel.html#SpiceDisplayChannel-display-primary-create) 
+  - 处理此信号时，可以保存屏幕缓冲区的地址
+  - 虚机的<code>d_format</code>是32_xRGB，即颜色用32位整数表示，只有24位有效。little-endian下B是第一个字节。
+  - 参数<code>d_stride</code>指屏幕的pitch，一般等于<code>d_width*4</code>。
+- [DisplayChannel: The “display-invalidate” signal](http://www.spice-space.org/api/spice-gtk/SpiceDisplayChannel.html#SpiceDisplayChannel-display-invalidate) 画面一旦有内容上的更新，就会触发此信号
 - [spicy-screenshot.c](https://github.com/SPICE/spice-gtk/blob/master/src/spicy-screenshot.c)
 
 ### misc
