@@ -1,7 +1,8 @@
 #ifndef __IO_EX_H__
 #define __IO_EX_H__
 
-/* includes! */
+#include <glib.h>
+#include <spice-client.h>
 
 void keyboard_init(SpiceChannel *channel);
 void keyboard_type(gchar c);

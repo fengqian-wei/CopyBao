@@ -1,3 +1,6 @@
+#include "io_ex.h"
+#include "finger.h"
+
 #define P(c)  spice_inputs_key_press(inputs_channel, c)
 #define R(c)  spice_inputs_key_release(inputs_channel, c)
 #define PR(c) spice_inputs_key_press_and_release(inputs_channel, c)

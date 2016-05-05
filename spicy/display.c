@@ -1,7 +1,11 @@
+#include <glib.h> // for gint, gpointer...
+#include <spice-client.h>
 
 enum SpiceSurfaceFmt d_format;
 gint                 d_width, d_height, d_stride;
 gpointer             d_data;
+
+static SpiceChannel *display_channel = NULL;
 
 static void cb_primary_create(SpiceChannel *channel, gint format,
                               gint width, gint height, gint stride,
@@ -17,7 +21,7 @@ static void cb_primary_create(SpiceChannel *channel, gint format,
 static void cb_invalidate(SpiceChannel *channel,
                           gint x, gint y, gint w, gint h, gpointer *data)
 {
-    void (*handler)() = data;
+    void (*handler)() = (void (*)()) data;
     handler();
 #if 0
     g_message("invalidate: %d %d %d", d_width, d_height, d_stride);
@@ -43,20 +47,21 @@ static void cb_invalidate(SpiceChannel *channel,
 
 void display_init(SpiceChannel *channel)
 {
+    display_channel = channel;
     g_signal_connect(channel, "display-primary-create",
                      G_CALLBACK(cb_primary_create), NULL);
 }
 
 uint32_t display_get_pixel(int x, int y)
 {
-    uint8_t p = d_data + d_stride * y + x * 4;
+    uint8_t *p = d_data + d_stride * y + x * 4;
     
     return *(uint32_t *)p;
 }
 
 void display_invalidate_add_handler(void (*handler)())
 {
-    g_signal_connect(channel, "display-invalidate",
+    g_signal_connect(display_channel, "display-invalidate",
                      G_CALLBACK(cb_invalidate), handler);
 }
 
