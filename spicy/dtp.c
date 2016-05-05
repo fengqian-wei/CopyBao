@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
+#include <glib.h>
+#include "io_ex.h"
 
 static char buffer[4096];
 static int length, sent;
@@ -27,13 +30,13 @@ static void broadcast_state_update(int sent, int total)
 static void switch_state(int new_state)
 {
     state = new_state;
-    broadcast_state_update(state, 0, 0);
+    broadcast_state_update(0, 0);
 }
+
+static gint do_sending(gpointer);
 
 static void enter_sending()
 {
-    gint do_sending(gpointer);
-
     switch_state(2);
     timeout = g_timeout_add(PERIOD, do_sending, NULL);
 }
@@ -52,7 +55,7 @@ static gint do_sending(gpointer data)
 	return FALSE;
     }
    
-    broadcast_state_update(2, sent, length);
+    broadcast_state_update(sent, length);
     return TRUE;
 }
 
