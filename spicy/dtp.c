@@ -61,8 +61,8 @@ static gint do_sending(gpointer data)
 
 static void on_status_change()
 {
-    uint32_t color_ul = 0; // up left
-    uint32_t color_ur = 0; // up right
+    uint32_t color_ul = display_get_pixel(0, 0); // up left
+    uint32_t color_ur = display_get_pixel(d_width - 1, 0); // up right
 
     int status = -1, result = -1;
 
@@ -101,6 +101,8 @@ static void on_status_change()
 		switch_state(0);
 	    }
 	    else {
+		length = strlen(buffer);
+		sent = 0;
                 switch_state(1);
 	    }
 	}
@@ -116,15 +118,16 @@ unsigned csharp_hashcode(const char *s);
 
 void dtp_transfer(char *str, void (*callback)(void *), void *user_data)
 {
-    unsigned hash = (csharp_hashcode(str) >> 4) & 0xFFFF;
+    unsigned hash = (csharp_hashcode(str) >> 16) & 0xFFFF;
     
     sprintf(buffer, "<%04X%s>", hash, str);
     length = strlen(buffer);
+    sent = 0;
 
     g_callback = callback;
     g_user_data = user_data;
 
-    if (saved_status == 0) {
+    if (saved_status == 1) {
         switch_state(1);
     }
     else {
