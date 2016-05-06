@@ -7,7 +7,6 @@ static SpiceMainChannel *channel;
 static GtkWindow *window;
 static GtkProgressBar *progress_bar; 
 static GCancellable *canceller;
-static gboolean cancelled;
 static GFile *files[2] = { NULL, NULL };
 
 static void end_copy();
@@ -15,9 +14,6 @@ static void end_copy();
 static void cb_progress(goffset sent, goffset total, gpointer data)
 {
     g_message("FileSender.progress");
-
-    if (cancelled)
-        return;
 
     gtk_progress_bar_set_fraction(progress_bar, (gdouble) sent / total);
 
@@ -28,17 +24,15 @@ static void cb_progress(goffset sent, goffset total, gpointer data)
 
 static void cb_finish(GObject *source, GAsyncResult *res, gpointer user_data)
 {
-   g_message("FileSender.finish");
-
-    if (cancelled)
-        return;
+    g_message("FileSender.finish");
 
     gboolean success = spice_main_file_copy_finish(channel, res, NULL);
     if (success) {
         msgbox("Copy successfully.");
     }
     else {
-        msgbox("Fail! Try again.");
+        if (!g_cancellable_is_cancelled(canceller))
+            msgbox("Fail! Try again.");
     }
     end_copy();
 }
@@ -46,8 +40,6 @@ static void cb_finish(GObject *source, GAsyncResult *res, gpointer user_data)
 static void cb_abort(GtkWidget *button, gpointer data)
 {
     g_cancellable_cancel(canceller);
-    cancelled = TRUE;
-    end_copy();
 }
 
 static void init_window(const char *from, const char *to)
@@ -108,7 +100,6 @@ static void begin_copy(const char *path_utf8)
 {
     files[0] = g_file_new_for_path(path_utf8);
     canceller = g_cancellable_new();
-    cancelled = FALSE;
 
     spice_main_file_copy_async(channel, files,
         G_FILE_COPY_OVERWRITE, canceller, 
@@ -116,14 +107,16 @@ static void begin_copy(const char *path_utf8)
 
     char buf_to[200];
     gchar *fn = g_path_get_basename(path_utf8);
-    sprintf(buf_to, "D:\\%s", fn);
+    sprintf(buf_to, "C:\\Documents and Settings\\cls\\%s", fn);
     g_free(fn);
     init_window(path_utf8, buf_to);
 }
 
 static void end_copy()
-{
+{ 
     close_window();
+    g_object_unref(files[0]);
+    g_object_unref(canceller);
 }
 
 static gchar *my_choose_file();
