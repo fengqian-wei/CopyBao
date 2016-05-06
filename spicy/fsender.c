@@ -108,11 +108,14 @@ static GtkWindow *create_window()
     GtkWindow *window;
     GtkBox *vbox;
     GtkButton *btn_abort;
+    GtkAlignment *align;
     char buf[256];
 
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(window, "File Sender");
-    gtk_window_set_default_size(window, 400, 200);
+
+    /* padding */
+    gtk_container_border_width(GTK_CONTAINER(window), 10);
 
     /* hide max/min button */
     gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DIALOG);
@@ -136,10 +139,14 @@ static GtkWindow *create_window()
     gtk_box_pack_start(vbox, GTK_WIDGET(lb_status), FALSE, FALSE, 0);
 
     btn_abort = GTK_BUTTON(gtk_button_new_with_label("Abort!"));
+    gtk_widget_set_size_request(GTK_WIDGET(btn_abort), 100, 40);
     g_signal_connect(
         GTK_OBJECT(btn_abort), "clicked",
 	GTK_SIGNAL_FUNC(cb_abort), NULL);
-    gtk_box_pack_start(vbox, GTK_WIDGET(btn_abort), FALSE, FALSE, 0);
+
+    align = GTK_ALIGNMENT(gtk_alignment_new(0.5, 0.5, 0, 0));
+    gtk_container_add(GTK_CONTAINER(align), GTK_WIDGET(btn_abort));
+    gtk_box_pack_start(vbox, GTK_WIDGET(align), FALSE, FALSE, 0);
 
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(vbox));
     gtk_widget_show_all(GTK_WIDGET(window));
