@@ -8,7 +8,6 @@
 GtkWidget *input_text_view;
 GtkWidget *input_send_button;
 GtkWidget *input_stop_button;
-GtkWidget *input_reset_button;
 GtkWidget *input_progress_bar;
 
 static gchar *get_input_text()
@@ -49,7 +48,6 @@ static void stop_sending()
     g_free(tsp.text);
     gtk_widget_set_sensitive(input_send_button, TRUE);
     gtk_widget_hide(input_stop_button);
-    gtk_widget_set_sensitive(input_reset_button, TRUE);
     gtk_widget_set_sensitive(input_text_view, TRUE);
 
     send_enable_buttons(TRUE);

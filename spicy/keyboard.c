@@ -16,7 +16,10 @@ void keyboard_init(SpiceChannel *channel)
 
 void keyboard_type(gchar c)
 {
-    Finger *pf = &char_map[c];
+    Finger *pf = &char_map[(guchar) c];
+    if (pf->code == 0)
+        return;
+
     if (pf->shift)
         PR_S(pf->code);
     else
