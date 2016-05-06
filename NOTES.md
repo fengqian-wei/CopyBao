@@ -60,6 +60,7 @@
 - [gtk_window_set_type_hint ()](https://developer.gnome.org/gtk2/2.24/GtkWindow.html#gtk-window-set-type-hint)设置为[GDK_WINDOW_TYPE_HINT_DIALOG](https://developer.gnome.org/gdk2/2.24/gdk2-Windows.html#GdkWindowTypeHint)可用来隐藏最大最小化按钮
 - [g_message ()](https://developer.gnome.org/glib/unstable/glib-Message-Logging.html#g-message) 使用g_message等函数记录日志
 - [g_path_get_basename ()](https://developer.gnome.org/glib/stable/glib-Miscellaneous-Utility-Functions.html#g-path-get-basename) 获得路径中的文件名部分。
+- [The Alignment widget](https://developer.gnome.org/gtk-tutorial/stable/x1243.html) 可以用Alignment实现按钮的原大小显示+居中。
 
 ### Win32 API
 
