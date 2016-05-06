@@ -44,7 +44,9 @@ static void start_sending()
     dtp_state_update = update_status;
 
     char buf[200];
-    sprintf(buf, "f%s|%d", filename, nbytes_remain);
+    char *filename_base64 = g_base64_encode((guchar *) filename, strlen(filename));
+    sprintf(buf, "f%s|%d", filename_base64, nbytes_remain);
+    g_free(filename_base64);
 
     dtp_transfer(buf, do_sending, NULL);
 }
