@@ -1,4 +1,6 @@
+#ifdef UNICODE
 #undef UNICODE
+#endif
 #define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #include <stdio.h>
@@ -57,8 +59,8 @@ char *finish_args()
 
 int main(void)
 {
-	const char *cmdline = GetCommandLine();
-	const char *new_cmdline;
+	char *cmdline = GetCommandLine();
+	char *new_cmdline;
 
 	{
 		char full_path[256];
@@ -100,6 +102,20 @@ int main(void)
 	}
 
 	new_cmdline = finish_args();
-	system(new_cmdline);
+
+	{
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		DWORD flags = 0;
+
+		memset(&si, 0, sizeof(si));
+		si.cb = sizeof(STARTUPINFO);
+
+/* want to show the console of spicy for debug? */
+#if 0
+		flags = CREATE_NEW_CONSOLE;
+#endif
+		CreateProcessA(NULL, new_cmdline, NULL, NULL, FALSE, flags, NULL, NULL, &si, &pi);
+	}
 	return 0;
 }
