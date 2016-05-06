@@ -23,8 +23,6 @@ static gchar *get_input_text()
     return gtk_text_buffer_get_text(buffer, &begin, &end, FALSE);
 }
 
-
-#include "base64.h"
 int current_period_index = 0;
 typedef struct _SendingProcess
 {
@@ -36,30 +34,14 @@ typedef struct _SendingProcess
 
 SendingProcess tsp; // the sending process
 
-static GtkWidget *btn_load_recv;
-static GtkWidget *btn_encode_file;
-static GtkWidget *btn_cancel_encode;
 static GtkWidget *lbl_period;
 static GtkWidget *btn_prev_period;
 static GtkWidget *btn_next_period;
 
-static int encode_state = 0;
-
 static void send_enable_buttons(gboolean end)
 {
-    gtk_widget_set_sensitive(btn_encode_file, end);
-    gtk_widget_set_sensitive(btn_cancel_encode, end);
-    gtk_widget_set_sensitive(btn_load_recv, end);
     gtk_widget_set_sensitive(btn_prev_period, end);
     gtk_widget_set_sensitive(btn_next_period, end);
-
-    if (end == TRUE) {
-        if(encode_state == 0) {
-            gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
-        } else if (encode_state == 1) {
-            gtk_widget_set_sensitive(btn_encode_file, FALSE);
-        }
-    }
 }
 
 static void stop_sending()
@@ -127,72 +109,8 @@ static void stop_button_clicked(GtkWidget *button, gpointer data)
 }
 
 static GtkTextBuffer *input_text_buffer_origin;
-static GtkTextBuffer *input_text_buffer_encoded_file = NULL;
 
-static void encode_file(GtkWidget *button, gpointer data)
-{
-    char *file_path = choose_file();
-    if (!file_path)
-        return;
-
-    FILE *in = fopen(file_path, "rb");
-    FILE *out = tmpfile();
-
-    g_free(file_path);
-
-    int insize = get_file_size(in);
-    char buf[256];
-    sprintf(buf, "%06x\n", insize);
-    fputs(buf, out);
-
-    do_base64_encode(in, out, 80);
-    fclose(in);
-
-    rewind(out);
-    GtkTextBuffer *text_buffer = text_buffer_from_file(out);
-    fclose(out);
-
-    input_text_buffer_encoded_file = text_buffer;
-    gtk_text_view_set_buffer(GTK_TEXT_VIEW(input_text_view), text_buffer);
-
-    gtk_widget_set_sensitive(btn_encode_file, FALSE);
-    gtk_widget_set_sensitive(btn_cancel_encode, TRUE);
-    gtk_widget_set_sensitive(btn_load_recv, FALSE);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), FALSE);
-    encode_state = 1;
-}
-
-/* TODO: ? add function set_encode_state */
-
-static void _cancel_encode()
-{
-    gtk_text_view_set_buffer(
-        GTK_TEXT_VIEW(input_text_view), input_text_buffer_origin);
-    input_text_buffer_encoded_file = NULL;
-
-    gtk_widget_set_sensitive(btn_encode_file, TRUE);
-    gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
-    gtk_widget_set_sensitive(btn_load_recv, TRUE);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(input_text_view), TRUE);
-    encode_state = 0;
-}
-
-static void cancel_encode(GtkWidget *button, gpointer data)
-{
-    _cancel_encode();
-}
-
-static void reset_button_clicked(GtkWidget *button, gpointer data)
-{
-    if (encode_state > 0)
-        _cancel_encode();
-
-    gtk_text_buffer_set_text(input_text_buffer_origin, "", -1);
-
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(input_progress_bar), 0);
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(input_progress_bar), "0.0%");
-}
-
+#if 0
 static void load_recv(GtkWidget *button, gpointer data)
 {
     char *mem;
@@ -206,6 +124,7 @@ static void load_recv(GtkWidget *button, gpointer data)
 
     g_free(mem);
 }
+#endif
 
 static void load_current_period()
 {
@@ -240,7 +159,7 @@ GtkWidget *create_input_window()
     GtkWidget *label, *label2;
     GtkWidget *scrollwin;
     GtkWidget *text_view;
-    GtkWidget *button, *button2, *button3;
+    GtkWidget *button, *button2;
     GtkWidget *progress_bar;
 
     /* window */
@@ -255,28 +174,6 @@ GtkWidget *create_input_window()
         GTK_SIGNAL_FUNC(gtk_widget_hide_on_delete), NULL);
 
     vbox = gtk_vbox_new(FALSE, 10);
-
-    /* encoding & recv */
-    GtkWidget *hbox4 = gtk_hbox_new(FALSE, 10);
-    btn_load_recv = gtk_button_new_with_label("Load Recv");
-    if (!the_config.recv->file)
-        gtk_widget_set_sensitive(btn_load_recv, FALSE);
-    g_signal_connect (
-        GTK_OBJECT(btn_load_recv), "clicked",
-        GTK_SIGNAL_FUNC(load_recv), NULL);
-    gtk_box_pack_end (GTK_BOX(hbox4), btn_load_recv, FALSE, FALSE, 0);
-    btn_encode_file = gtk_button_new_with_label("Encode File");
-    g_signal_connect (
-        GTK_OBJECT(btn_encode_file), "clicked",
-        GTK_SIGNAL_FUNC(encode_file), NULL);
-    gtk_box_pack_start (GTK_BOX(hbox4), btn_encode_file, FALSE, FALSE, 0);
-    btn_cancel_encode = gtk_button_new_with_label("Cancel Encode");
-    gtk_widget_set_sensitive(btn_cancel_encode, FALSE);
-    g_signal_connect(
-        GTK_OBJECT(btn_cancel_encode), "clicked",
-        GTK_SIGNAL_FUNC(cancel_encode), NULL);
-    gtk_box_pack_start (GTK_BOX(hbox4), btn_cancel_encode, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox4, FALSE, FALSE, 0);
 
     hbox1 = gtk_hbox_new(FALSE, 10);
     label = gtk_label_new("Text:");
@@ -348,12 +245,6 @@ GtkWidget *create_input_window()
         GTK_OBJECT(button2), "clicked",
         GTK_SIGNAL_FUNC(stop_button_clicked), NULL);
     gtk_box_pack_end(GTK_BOX(hbox2), button2, FALSE, FALSE, 0);
-    button3 = gtk_button_new_with_label("Reset");
-    gtk_widget_set_size_request(button3, 100, 40);
-    g_signal_connect(
-        GTK_OBJECT(button3), "clicked",
-        GTK_SIGNAL_FUNC(reset_button_clicked), NULL);
-    gtk_box_pack_start(GTK_BOX(hbox2), button3, FALSE, FALSE, 0);
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
 
@@ -361,7 +252,6 @@ GtkWidget *create_input_window()
 
     input_send_button = button;
     input_stop_button = button2;
-    input_reset_button = button3;
     input_text_view = text_view;
     input_progress_bar = progress_bar;
 
