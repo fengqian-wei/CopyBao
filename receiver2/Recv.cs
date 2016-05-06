@@ -118,7 +118,7 @@ namespace Recv2
                 CancelFile();
 
                 string[] ss = s2.Split('|');
-                path = @"D:\" + ss[0];
+                path = @"D:\" + Encoding.UTF8.GetString(Convert.FromBase64String(ss[0]));
                 size = Convert.ToInt32(ss[1]);
                 recv = 0;
                 lbPath.Text = "Path: " + path;
@@ -129,7 +129,7 @@ namespace Recv2
             }
             else if (t == 'd')
             {
-                var buf = System.Convert.FromBase64String(s2);
+                var buf = Convert.FromBase64String(s2);
                 bw.Write(buf);
                 recv += buf.Length;
                 lbSize.Text = "Received: " + recv + "/" + size;

@@ -22,7 +22,7 @@ dxxxx
 
 其中：
 - 前导的<code>f</code>和<code>d</code>表示数据包类型。
-- filename表示文件名。
+- filename表示base64编码的文件名。
 - size是十进制表示的文件大小，单位是字节。
 - xxxx是不定长的base64编码串，表示文件内容。
 
