@@ -4,7 +4,7 @@ LDFLAGS = $(shell mingw32-pkg-config --libs spice-client-glib-2.0 spice-client-g
 
 EXE = spicy.exe
 FIRM_OBJS = spicy.o spice-cmdline.o spicy-connect.o extra-channel-main.o
-APP_OBJS = keyboard.o display.o typer.o dtp.o fsender.o my_config.o util.o hash.o
+APP_OBJS = keyboard.o display.o typer.o dtp.o fsender.o filecopy.o my_config.o util.o hash.o
 ALL_OBJS = $(FIRM_OBJS) $(APP_OBJS)
 
 .PHONY: all clean
