@@ -88,7 +88,6 @@ static void send_button_clicked(GtkWidget *button, gpointer data)
 
     gtk_widget_set_sensitive(input_send_button, FALSE);
     gtk_widget_show(input_stop_button);
-    gtk_widget_set_sensitive(input_reset_button, FALSE);
     gtk_widget_set_sensitive(input_text_view, FALSE);
 
     tsp.text = get_input_text();

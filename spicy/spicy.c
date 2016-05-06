@@ -52,6 +52,29 @@
 #include "dtp.h"
 #include "typer.h"
 #include "fsender.h"
+#include "filecopy.h"
+
+/* my callbacks here */
+GtkWidget *type_window = NULL;
+
+static void menu_cb_type(GtkAction *action, void *data)
+{
+    if (!type_window) {
+        type_window = create_input_window();
+    }
+
+    gtk_widget_show(type_window);
+}
+
+static void menu_cb_filesender(GtkAction *action, void *data)
+{
+    fsender();
+}
+
+static void menu_cb_filecopy(GtkAction *action, void *data)
+{
+    filecopy();
+}
 
 typedef struct spice_connection spice_connection;
 
@@ -71,8 +94,6 @@ enum {
 
 typedef struct _SpiceWindow SpiceWindow;
 typedef struct _SpiceWindowClass SpiceWindowClass;
-
-SpiceMainChannel *main_channel;
 
 struct _SpiceWindow {
     GObject          object;
@@ -469,8 +490,8 @@ static void menu_cb_statusbar(GtkToggleAction *action, gpointer data)
 static void menu_cb_about(GtkAction *action, void *data)
 {
     char *comments = "Enable COPY for\nXueBao spice client";
-    static const char *copyright = "(copyleft) 2016";
-    static const char *authors[] = { "Mr. Unknown",
+    static const char *copyright = "(copyleft) LibreCrops";
+    static const char *authors[] = { "LibreCrops@github",
                                NULL };
     SpiceWindow *win = data;
 
@@ -482,33 +503,6 @@ static void menu_cb_about(GtkAction *action, void *data)
                           "version",         PACKAGE_VERSION,
                           "license",         "LGPLv2.1",
                           NULL);
-}
-
-/* !my critical seciton! */
-
-GtkWidget *type_window = NULL;
-
-static void menu_cb_type(GtkAction *action, void *data)
-{
-    if (!type_window) {
-        type_window = create_input_window();
-    }
-
-    gtk_widget_show(type_window);
-}
-
-static void transfer_ready(GObject *source_object, GAsyncResult *res, gpointer user_data)
-{
-    msgbox("!");
-}
-
-static void menu_cb_test1(GtkAction *action, void *data)
-{
-    GFile* sources[2] = { NULL, NULL };
-
-    msgbox("?");
-    sources[0] = g_file_new_for_path("E:\\lake.jpg");
-    spice_main_file_copy_async(main_channel, sources, G_FILE_COPY_NONE, NULL, NULL, NULL, transfer_ready, NULL);
 }
 
 static gboolean delete_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
@@ -747,13 +741,17 @@ static const GtkActionEntry entries[] = {
         .callback    = G_CALLBACK(menu_cb_about),
     },{
         /* CopyBao menu */
-        .name        = "Type",
-        .label       = "_Type",
+        .name        = "Typer",
+        .label       = "_Typer",
         .callback    = G_CALLBACK(menu_cb_type)
     },{
-        .name        = "Test1",
-        .label       = "_Test1",
-        .callback    = G_CALLBACK(menu_cb_test1)
+        .name        = "FileSender",
+	.label       = "File_Sender",
+	.callback    = G_CALLBACK(menu_cb_filesender)
+    },{
+        .name        = "FileCopy",
+	.label       = "File_Copy",
+	.callback    = G_CALLBACK(menu_cb_filecopy)
     }
 };
 
@@ -847,13 +845,18 @@ static const GtkRadioActionEntry compression_entries[] = {
 static char ui_xml[] =
 "<ui>\n"
 "  <menubar action='MainMenu'>\n"
+"    <menu action='CopyBao'>\n"
+"      <menuitem action='Typer'/>\n"
+"      <menuitem action='FileSender'/>\n"
+"      <menuitem action='FileCopy'/>\n"
+"    </menu>\n"
+#if 0
 "    <menu action='FileMenu'>\n"
 "      <menuitem action='Connect'/>\n"
 "      <menu action='FileRecentMenu'/>\n"
 "      <separator/>\n"
 "      <menuitem action='Close'/>\n"
 "    </menu>\n"
-#if 0
 "    <menu action='EditMenu'>\n"
 "      <menuitem action='CopyToGuest'/>\n"
 "      <menuitem action='PasteFromGuest'/>\n"
@@ -895,10 +898,6 @@ static char ui_xml[] =
 "    </menu>\n"
 "    <menu action='HelpMenu'>\n"
 "      <menuitem action='About'/>\n"
-"    </menu>\n"
-"    <menu action='CopyBao'>\n"
-"      <menuitem action='Type'/>\n"
-"      <menuitem action='Test1'/>\n"
 "    </menu>\n"
 "  </menubar>\n"
 "  <toolbar action='ToolBar'>\n"
@@ -1143,7 +1142,7 @@ static SpiceWindow *create_spice_window(spice_connection *conn, SpiceChannel *ch
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(toggle), state);
 
     /* my code here */
-    gtk_widget_set_visible(win->toolbar, TRUE);
+    gtk_widget_set_visible(win->toolbar, FALSE);
     gtk_widget_set_visible(win->statusbar, FALSE);
 #ifdef USE_SMARTCARD
     gboolean smartcard;
@@ -1685,7 +1684,7 @@ static void channel_new(SpiceSession *s, SpiceChannel *channel, gpointer data)
                          G_CALLBACK(new_file_transfer), conn);
         main_mouse_update(channel, conn);
         main_agent_update(channel, conn);
-        main_channel = SPICE_MAIN_CHANNEL(channel);
+	filecopy_init(channel);
     }
 
     if (SPICE_IS_DISPLAY_CHANNEL(channel)) {
