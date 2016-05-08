@@ -1,108 +1,173 @@
-﻿## TODO
+# 笔记
 
-### ver 1.0
-- [x] 开发一个分派程序，可供用户选择是进入默认虚拟机还是修改版虚拟机
-- [x] 开发一个对话框，可供用户输入要粘贴进虚拟机的内容
-- [x] 开发读入文件&转换为base64编码的功能
-- [x] 开发发送端调速功能
-- [x] 开发接收端base64解码的功能
-- [x] 清理spicy的界面
+## 2016.03.29
 
-### ver 1.1
-- [ ] 重构spicy.c，把发送窗口的部分分割出来。允许单独调试发送窗口 
-- [x] 添加STOP（停止发送）按钮
+### 传递给spicec的命令行
 
-### ver 2.0
-- [ ] 添加菜单项FileSender，实现长文件的分块、互动、出错重传的传输
-- [ ] 添加菜单项Copy File，弹出文件对话框，复制文件
-- [ ] 开发文件显示对话框
+```batch
+D:\green\spice\spicec.exe  -h 10.64.14.8 -p 18009 -s 18010 --ca-file D:/green/spice/spice_truststore.pem --host-subject "C=CN,L=SH,O=Saicocch,CN=Saicocch Server" -w 89fcc1ebaaa7a17b0896662ac14039f4
+```
 
-## 参考
+### 使用mingw32编译器
 
-### GTK
+1.安装VMware Player.
 
-- [GTK+ 2.0 Tutorial](https://developer.gnome.org/gtk-tutorial/stable/)
-  - [Timeouts](https://developer.gnome.org/gtk-tutorial/stable/c1759.html)
-  - [Progress Bars](https://developer.gnome.org/gtk-tutorial/stable/x829.html)
-- [GTK+ 2 Reference Manual](https://developer.gnome.org/gtk2/2.24/)
-  - [gtk_window_set_modal ()](https://developer.gnome.org/gtk2/2.24/GtkWindow.html#gtk-window-set-modal)
-- [Text Widget Overview](https://developer.gnome.org/gtk2/2.24/TextWidget.html)
-- [GtkTextView](https://developer.gnome.org/gtk2/2.24/GtkTextView.html)
-  - [gtk_text_view_set_wrap_mode ()](https://developer.gnome.org/gtk2/2.24/GtkTextView.html#gtk-text-view-set-wrap-mode)
-  - gtk_widget_set_sensitive () for _enable/disable_
-  - [gtk_text_view_get_buffer ()](https://developer.gnome.org/gtk2/2.24/GtkTextView.html#gtk-text-view-get-buffer)
-  - GtkTextBuffer
-    - [gtk_text_buffer_get_text ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-text)
-    - [gtk_text_buffer_get_start_iter ()](https://developer.gnome.org/gtk2/2.24/GtkTextBuffer.html#gtk-text-buffer-get-start-iter)
-      - __Hints:__ g_free()
-    - [g_object_ref ()](https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-ref)
-  - [gtk_text_view_set_editable ()](man.chinaunix.net/develop/GTK+/2.6/gtk/GtkTextView.html#gtk-text-view-set-editable)
-- [GtkScrolledWindow](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html)
-  - [gtk_scrolled_window_set_policy ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-policy)
-  - [gtk_scrolled_window_set_shadow_type ()](https://developer.gnome.org/gtk2/2.24/GtkScrolledWindow.html#gtk-scrolled-window-set-shadow-type)
-- [How to set a fixed windows size for a GTK+ app in C?](http://stackoverflow.com/questions/4772804/how-to-set-a-fixed-windows-size-for-a-gtk-app-in-c)
-- [GLib: Key-value file parser](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html)
-  - [g_key_file_new ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-new)
-  - [g_key_file_load_from_file ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-load-from-file)
-  - [g_key_file_get_integer_list ()](https://developer.gnome.org/glib/stable/glib-Key-value-file-parser.html#g-key-file-get-integer-list)
-- [GtkFileChooserDialog](https://developer.gnome.org/gtk2/2.24/GtkFileChooserDialog.html)
-- [GtkMessageDialog](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkMessageDialog.html)
-- [gtk_widget_hide_on_delete ()](http://man.chinaunix.net/develop/GTK+/2.6/gtk/GtkWidget.html#gtk-widget-hide-on-delete)
-- [g_locale_from_utf8 ()](https://developer.gnome.org/glib/unstable/glib-Character-Set-Conversion.html#g-locale-from-utf8)
-- [spice_main_file_copy_async()](http://www.spice-space.org/api/spice-gtk/SpiceMainChannel.html#spice-main-file-copy-async)
-  - [The “new-file-transfer” signal](http://www.spice-space.org/api/spice-gtk/SpiceMainChannel.html#SpiceMainChannel-new-file-transfer)
-  - [GCancellable](https://developer.gnome.org/gio/unstable/GCancellable.html)
-  - [GFile](https://developer.gnome.org/gio/stable/GFile.html#GFileCopyFlags)
-  - [GAsyncResult](https://developer.gnome.org/gio/stable/GAsyncResult.html#GAsyncReadyCallback)
-- [glib-genmarshal](https://developer.gnome.org/gobject/stable/glib-genmarshal.html)
-  - 用于实现<code>spice-marshal.txt</code>→<code>spice-marshal{.h, .c}</code>的转换
-- [gtk_window_set_deletable ()](https://developer.gnome.org/gtk2/2.24/GtkWindow.html#gtk-window-set-deletable)可用来禁用关闭按钮
-- [gtk_window_set_type_hint ()](https://developer.gnome.org/gtk2/2.24/GtkWindow.html#gtk-window-set-type-hint)设置为[GDK_WINDOW_TYPE_HINT_DIALOG](https://developer.gnome.org/gdk2/2.24/gdk2-Windows.html#GdkWindowTypeHint)可用来隐藏最大最小化按钮
-- [g_message ()](https://developer.gnome.org/glib/unstable/glib-Message-Logging.html#g-message) 使用g_message等函数记录日志
-- [g_path_get_basename ()](https://developer.gnome.org/glib/stable/glib-Miscellaneous-Utility-Functions.html#g-path-get-basename) 获得路径中的文件名部分。
-- [The Alignment widget](https://developer.gnome.org/gtk-tutorial/stable/x1243.html) 可以用Alignment实现按钮的原大小显示+居中。
+2.下载Fedora最新版（Fedora 23）32位映像.
 
-### Win32 API
+3.安装Fedora后，保证虚拟机的网络为NAT模式，这样Fedora会自动联网.
 
-- [How can we check if a file Exists or not using Win32 program?](http://stackoverflow.com/questions/3828835/how-can-we-check-if-a-file-exists-or-not-using-win32-program)
-- [Win32 - Select Directory Dialog from C/C++](http://stackoverflow.com/questions/12034943/win32-select-directory-dialog-from-c-c)
-- [CoTaskMemFree Function]() - 使用这个而非IMalloc->Free()释放pidl
-- [DialogBoxIndirectParam](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645461(v=vs.85).aspx) - 从二进制对话框“模板”创建对话框
-- [DialogProc callback function](https://msdn.microsoft.com/en-us/library/windows/desktop/ms645469(v=vs.85).aspx)
-- [Changing the Current Directory](https://msdn.microsoft.com/en-us/library/windows/desktop/aa363806(v=vs.85).aspx) - 改变“当前”目录
-- [Creation of a Console (Windows)](https://msdn.microsoft.com/en-us/library/windows/desktop/ms682528(v=vs.85).aspx) A process can also create a console by specifying the **CREATE_NEW_CONSOLE** flag in a call to CreateProcess. 传递这参数给CreateProcess，可以让spicy.exe显示出命令行窗口。
-  - 参考[此页面](http://stackoverflow.com/questions/780465/winapi-createprocess-but-hide-the-process-window)学习CreateProcess的用法
+4.访问[http://mirrors.163.com](http://mirrors.163.com)，下载Fedora的两个repo文件，复制到/etc/yum.repo.d/（需要root权限），随后按照页面上的提示，更新缓存。
 
-### Win32 Resource File
-- [How can I read a compiled resource (.res) file in C#?](http://stackoverflow.com/questions/7982181/how-can-i-read-a-compiled-resource-res-file-in-c)
+5.安装mingw32和gtk支持：
+```
+$ sudo dnf install mingw32-gcc
+$ sudo dnf install mingw32-gtk-2.0
+```
 
-### base64
-- [coreutils/base64.c](http://git.savannah.gnu.org/cgit/coreutils.git/tree/src/base64.c)
-- [gnulib/base64.c](http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob;f=lib/base64.c;h=1a8bfce7a534f83f19a093432bafe883f16de9b1;hb=HEAD)
-- [g_base64_encode ()](https://developer.gnome.org/glib/unstable/glib-Base64-Encoding.html#g-base64-encode) GLib本身就提供base64加密解密支持。
-- [Base64在线编码解码](http://tools.jb51.net/tools/base64_decode-gb2312.php)
+6.保证VMware Tools已经安装，这样就可以
 
-### C# ###
-- [Control.InValidate vs. Control.Refresh()?](https://bytes.com/topic/c-sharp/answers/244445-control-invalidate-vs-control-refresh)
-- [String.Format for Hex](http://stackoverflow.com/questions/11618387/string-format-for-hex)
-- [Reference Source](http://referencesource.microsoft.com/)
-- [How do I encode and decode a base64 string?](http://stackoverflow.com/questions/11743160/how-do-i-encode-and-decode-a-base64-string)
-- [C#: Get complete desktop size?](http://stackoverflow.com/questions/1317235/c-get-complete-desktop-size)
-- [C# - Reading from and Writing into Binary files](http://www.tutorialspoint.com/csharp/csharp_binary_files.htm)
-- [/target (C# Compiler Options)](https://msdn.microsoft.com/zh-cn/library/6h25dztx.aspx)
+- 与主机共享剪贴板
+- 在主机与虚拟机间拖放文件
 
-### SPICE
-- [Spice-GTK Reference Manual](http://www.spice-space.org/api/spice-gtk/index.html)
-- [DisplayChannel: The “display-primary-create” signal](http://www.spice-space.org/api/spice-gtk/SpiceDisplayChannel.html#SpiceDisplayChannel-display-primary-create) 
-  - 处理此信号时，可以保存屏幕缓冲区的地址
-  - 虚机的<code>d_format</code>是32_xRGB，即颜色用32位整数表示，只有24位有效。little-endian下B是第一个字节。
-  - 参数<code>d_stride</code>指屏幕的pitch，一般等于<code>d_width*4</code>。
-- [DisplayChannel: The “display-invalidate” signal](http://www.spice-space.org/api/spice-gtk/SpiceDisplayChannel.html#SpiceDisplayChannel-display-invalidate) 画面一旦有内容上的更新，就会触发此信号
-- [spicy-screenshot.c](https://github.com/SPICE/spice-gtk/blob/master/src/spicy-screenshot.c)
+7.在这个地址处复制gtk2的hello world程序：http://www.levien.com/gimp/hello.html
 
-### misc
-- [fstat](http://linux.die.net/man/2/fstat) - 获得文件长度
-- [tmpfile](https://msdn.microsoft.com/zh-cn/library/x8x7sakw.aspx) - 创建一个临时文件并返回其FILE指针
+8.在虚拟机内输入：
+
+```
+$ gedit hellogtk.c
+```
+
+然后按Ctrl+V粘贴代码。
+
+9.输入以下命令编译：
+
+```
+$ i686-w64-mingw32-gcc -o hellogtk.exe hellogtk.c $(mingw32-pkg-config --cflags --libs gtk+-2.0)
+```
+
+10.打开文件管理器，把hellogtk.exe拖至主机。
+
+11.把该文件放到学宝的spice目录下。
+
+12.测试DLL可用性：
+
+```
+E:\XueBao>set path=
+
+E:\XueBao>path
+PATH=(null)
+
+E:\XueBao>spice\hellogtk.exe
+(成功启动)
+
+E:\XueBao>copy spice\hellogtk.exe
+
+E:\XueBao>hellogtk.exe
+(缺少DLL，报错)
+```
+
+### 编译spice-gtk
+
+1.去[这个地址](http://www.spice-space.org/download.html)下载：
+- spice-gtk-0.31.tar.bz2
+- spice-protocol-0.12.11.tar.bz2
+
+2.下载依赖的包：
+```
+$ sudo dnf install intltool mingw32-openssl mingw32-gstreamer1 mingw32-gstreamer1-plugins-base mingw32-gstreamer1-plugins-good mingw32-usbredir glib2-devel
+
+```
+
+3.编译安装spice-protocol
+```
+$ mingw32-configure
+$ mingw32-make
+$ sudo mingw32-make install
+```
+
+4.编译spice-gtk
+```
+$ mingw32-configure --without-sasl --with-audio=gstreamer --with-coroutine=winfiber --disable-smartcard --without-python --enable-usbredir=yes --disable-gtk-doc --disable-werror --enable-static --enable-shared --with-gtk=2.0
+$ mingw32-make
+```
+
+5.（编译出的spicy程序，放到windows下运行出错。经查，好多文件引用了libobject的DLL两个没有导出的符号：
+- g_type_check_instance_is_fundamentally_a
+- g_type_class_adjust_private_offset
+
+（后期的猜想是，还是因为有DLL没有提供。找时间再试！）
+
+### 使用官方包
+
+1.后来发现官方是有提供mingw32-spice-gtk包的：
+
+```
+$ sudo dnf install mingw32-spice-gtk
+```
+
+不过，这个包里的可执行程序不含spicy.exe，只有spicy-screenshot.exe, spicy-stats.exe。
+
+2.打包mingw32目录，放到windows下，解压
+
+3.进入其中的bin目录，执行：
+
+（↓这些是上面的参数。没有提供ca-file和host-subject！）
+```
+F:\mingw\bin>spicy-screenshot --uri=spice://10.64.14.8?port=18009 -p 18009 -s 18010 -w 89fcc1ebaaa7a17b0896662ac14039f4
+wrote screen shot to spicy-screenshot.ppm
+
+```
+
+（↑注意到，上面的命令执行时，学宝的spicec自动退出。可见“独享模式”的含义）
+
+4.可以从[这里](http://www.softpedia.com/get/Multimedia/Graphic/Graphic-Viewers/PPMView.shtml)下载到ppm文件的查看器。
+
+5.打开刚才的截屏，发现还是可以的：
+
+![](screenshot1.png)
+
+### 必备的DLL
+```
+iconv.dll
+libatk-1.0-0.dll
+libbz2-1.dll
+libcairo-2.dll
+libcelt051-0.dll
+libcrypto-10.dll
+libexpat-1.dll
+libffi-6.dll
+libfontconfig-1.dll
+libfreetype-6.dll
+libgcc_s_sjlj-1.dll
+libgdk-win32-2.0-0.dll
+libgdk_pixbuf-2.0-0.dll
+libgio-2.0-0.dll
+libglib-2.0-0.dll
+libgmodule-2.0-0.dll
+libgobject-2.0-0.dll
+libgstapp-1.0-0.dll
+libgstaudio-1.0-0.dll
+libgstbase-1.0-0.dll
+libgstreamer-1.0-0.dll
+libgsttag-1.0-0.dll
+libgtk-win32-2.0-0.dll
+libintl-8.dll
+libjpeg-62.dll
+libogg-0.dll
+libopus-0.dll
+libpango-1.0-0.dll
+libpangocairo-1.0-0.dll
+libpangowin32-1.0-0.dll
+libpixman-1-0.dll
+libpng16-16.dll
+libspice-client-glib-2.0-8.dll
+libspice-client-gtk-2.0-4.dll
+libssl-10.dll
+libvorbis-0.dll
+libvorbisfile-3.dll
+libwinpthread-1.dll
+zlib1.dll
+```
 
 ## 2016.3.30
 - 学宝虚拟机每次重新启动（cold & hot），都会使用新的端口号和密码。
